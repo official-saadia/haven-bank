@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 1720" width="1560" height="1720" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" markerWidth="11" markerHeight="11" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 z" fill="#4c5257"/></marker><marker id="ar" markerWidth="11" markerHeight="11" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 z" fill="#b4564a"/></marker></defs>
+<rect width="1560" height="1720" fill="#faf5f5"/>
+<text x="50" y="52" font-size="24" font-weight="bold" fill="#0b0d0e">Haven Bank &#8212; sign-in flow</text>
+<text x="50" y="78" font-size="13" fill="#4c5257">OAuth 2.1 Authorization Code + PKCE, with an email one-time code as a second factor. Every arrow is a real request; the panel at the foot lists what makes each step fail.</text>
+<rect x="19" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="105" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">Browser / SPA</text>
+<text x="105" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">:5173  React + oidc-client-ts</text>
+<line x1="105" y1="142" x2="105" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="214" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="300" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">RateLimitFilter</text>
+<text x="300" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">pre-security</text>
+<line x1="300" y1="142" x2="300" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="434" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="520" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">Authorization Server</text>
+<text x="520" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">@Order(1)  /oauth2/**</text>
+<line x1="520" y1="142" x2="520" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="674" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="760" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">Login + OTP</text>
+<text x="760" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">@Order(3)  Thymeleaf</text>
+<line x1="760" y1="142" x2="760" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="894" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="980" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">REST API</text>
+<text x="980" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">@Order(2)  stateless JWT</text>
+<line x1="980" y1="142" x2="980" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="1094" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="1180" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">Redis</text>
+<text x="1180" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">OTP, limits, denylist</text>
+<line x1="1180" y1="142" x2="1180" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="1244" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="1330" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">Postgres</text>
+<text x="1330" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">users</text>
+<line x1="1330" y1="142" x2="1330" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="1374" y="92" width="172" height="46" rx="7" fill="#0b0d0e"/>
+<text x="1460" y="114" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e6eaed">Email</text>
+<text x="1460" y="129" text-anchor="middle" font-size="9.5" fill="#8d949a">SMTP</text>
+<line x1="1460" y1="142" x2="1460" y2="1385" stroke="#c8ccd0" stroke-width="1.4"/>
+<rect x="36" y="164" width="1488" height="22" rx="4" fill="#15181a"/>
+<text x="48" y="179" font-size="10.5" font-weight="bold" fill="#f4f7f9" letter-spacing="1.6">1 - THE CLIENT ASKS FOR AUTHORIZATION</text>
+<path d="M105,204 h34 v18 h-30" fill="none" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="147" y="206" font-size="11" fill="#4c5257">signinRedirect(): create state + code_verifier</text>
+<text x="147" y="220" font-size="9.5" fill="#8d949a">code_challenge = S256(code_verifier); both kept in sessionStorage</text>
+<circle cx="56" cy="212" r="11" fill="#0b0d0e"/>
+<text x="56" y="216" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">1</text>
+<line x1="105" y1="252" x2="511" y2="252" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="312.5" y="245" text-anchor="middle" font-size="11" fill="#4c5257">GET /oauth2/authorize  client_id, redirect_uri, state, code_challenge</text>
+<circle cx="312.5" cy="252" r="0" fill="none"/>
+<text x="52" y="256" font-size="11" font-weight="bold" fill="#f4f7f9">2</text>
+<circle cx="56" cy="252" r="11" fill="#0b0d0e"/>
+<text x="56" y="256" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">2</text>
+<path d="M520,284 h34 v18 h-30" fill="none" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="562" y="286" font-size="11" fill="#4c5257">anonymous -&gt; RequestCache.saveRequest</text>
+<text x="562" y="300" font-size="9.5" fill="#8d949a">filtered: only GET navigations; /oauth2/authorize always kept</text>
+<circle cx="56" cy="292" r="11" fill="#0b0d0e"/>
+<text x="56" y="296" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">3</text>
+<line x1="520" y1="332" x2="114" y2="332" stroke="#4c5257" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="312.5" y="325" text-anchor="middle" font-size="11" fill="#4c5257">302  -&gt;  /login</text>
+<circle cx="312.5" cy="332" r="0" fill="none"/>
+<text x="52" y="336" font-size="11" font-weight="bold" fill="#f4f7f9">4</text>
+<circle cx="56" cy="332" r="11" fill="#0b0d0e"/>
+<text x="56" y="336" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">4</text>
+<rect x="36" y="364" width="1488" height="22" rx="4" fill="#15181a"/>
+<text x="48" y="379" font-size="10.5" font-weight="bold" fill="#f4f7f9" letter-spacing="1.6">2 - FIRST FACTOR: PASSWORD</text>
+<line x1="105" y1="412" x2="751" y2="412" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="432.5" y="405" text-anchor="middle" font-size="11" fill="#4c5257">GET /login</text>
+<circle cx="432.5" cy="412" r="0" fill="none"/>
+<text x="52" y="416" font-size="11" font-weight="bold" fill="#f4f7f9">5</text>
+<circle cx="56" cy="412" r="11" fill="#0b0d0e"/>
+<text x="56" y="416" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">5</text>
+<line x1="760" y1="452" x2="114" y2="452" stroke="#4c5257" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="432.5" y="445" text-anchor="middle" font-size="11" fill="#4c5257">200  login.html  (CSRF token injected by Thymeleaf)</text>
+<circle cx="432.5" cy="452" r="0" fill="none"/>
+<text x="52" y="456" font-size="11" font-weight="bold" fill="#f4f7f9">6</text>
+<circle cx="56" cy="452" r="11" fill="#0b0d0e"/>
+<text x="56" y="456" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">6</text>
+<line x1="105" y1="492" x2="291" y2="492" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="202.5" y="485" text-anchor="middle" font-size="11" fill="#4c5257">POST /login  username, password, _csrf</text>
+<circle cx="202.5" cy="492" r="0" fill="none"/>
+<text x="52" y="496" font-size="11" font-weight="bold" fill="#f4f7f9">7</text>
+<circle cx="56" cy="492" r="11" fill="#0b0d0e"/>
+<text x="56" y="496" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">7</text>
+<line x1="300" y1="532" x2="751" y2="532" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="530.0" y="525" text-anchor="middle" font-size="11" fill="#4c5257">allowed</text>
+<circle cx="530.0" cy="532" r="0" fill="none"/>
+<text x="52" y="536" font-size="11" font-weight="bold" fill="#f4f7f9">8</text>
+<circle cx="56" cy="532" r="11" fill="#0b0d0e"/>
+<text x="56" y="536" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">8</text>
+<text x="530.0" y="545" text-anchor="middle" font-size="9.5" fill="#8d949a">CRITICAL tier: 5/min per IP, submissions only</text>
+<line x1="760" y1="572" x2="1321" y2="572" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1045.0" y="565" text-anchor="middle" font-size="11" fill="#4c5257">load user; BCrypt verify</text>
+<circle cx="1045.0" cy="572" r="0" fill="none"/>
+<text x="52" y="576" font-size="11" font-weight="bold" fill="#f4f7f9">9</text>
+<circle cx="56" cy="572" r="11" fill="#0b0d0e"/>
+<text x="56" y="576" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">9</text>
+<rect x="36" y="604" width="1488" height="22" rx="4" fill="#15181a"/>
+<text x="48" y="619" font-size="10.5" font-weight="bold" fill="#f4f7f9" letter-spacing="1.6">3 - SECOND FACTOR: EMAILED ONE-TIME CODE</text>
+<line x1="760" y1="652" x2="1171" y2="652" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="970.0" y="645" text-anchor="middle" font-size="11" fill="#4c5257">issue OTP</text>
+<circle cx="970.0" cy="652" r="0" fill="none"/>
+<text x="52" y="656" font-size="11" font-weight="bold" fill="#f4f7f9">10</text>
+<circle cx="56" cy="652" r="11" fill="#0b0d0e"/>
+<text x="56" y="656" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">10</text>
+<text x="970.0" y="665" text-anchor="middle" font-size="9.5" fill="#8d949a">single use, TTL 5 min, bounded attempts</text>
+<line x1="760" y1="692" x2="1451" y2="692" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1110.0" y="685" text-anchor="middle" font-size="11" fill="#4c5257">send code</text>
+<circle cx="1110.0" cy="692" r="0" fill="none"/>
+<text x="52" y="696" font-size="11" font-weight="bold" fill="#f4f7f9">11</text>
+<circle cx="56" cy="692" r="11" fill="#0b0d0e"/>
+<text x="56" y="696" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">11</text>
+<path d="M760,724 h34 v18 h-30" fill="none" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="802" y="726" font-size="11" fill="#4c5257">park Authentication + email in session; clear SecurityContext</text>
+<text x="802" y="740" font-size="9.5" fill="#8d949a">user is deliberately anonymous again until the code is verified</text>
+<circle cx="56" cy="732" r="11" fill="#0b0d0e"/>
+<text x="56" y="736" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">12</text>
+<line x1="760" y1="772" x2="114" y2="772" stroke="#4c5257" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="432.5" y="765" text-anchor="middle" font-size="11" fill="#4c5257">302  -&gt;  /login/otp</text>
+<circle cx="432.5" cy="772" r="0" fill="none"/>
+<text x="52" y="776" font-size="11" font-weight="bold" fill="#f4f7f9">13</text>
+<circle cx="56" cy="772" r="11" fill="#0b0d0e"/>
+<text x="56" y="776" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">13</text>
+<line x1="105" y1="812" x2="751" y2="812" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="432.5" y="805" text-anchor="middle" font-size="11" fill="#4c5257">GET /login/otp  -&gt;  200 otp.html</text>
+<circle cx="432.5" cy="812" r="0" fill="none"/>
+<text x="52" y="816" font-size="11" font-weight="bold" fill="#f4f7f9">14</text>
+<circle cx="56" cy="812" r="11" fill="#0b0d0e"/>
+<text x="56" y="816" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">14</text>
+<line x1="105" y1="852" x2="751" y2="852" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="432.5" y="845" text-anchor="middle" font-size="11" fill="#4c5257">POST /login/otp  code, _csrf</text>
+<circle cx="432.5" cy="852" r="0" fill="none"/>
+<text x="52" y="856" font-size="11" font-weight="bold" fill="#f4f7f9">15</text>
+<circle cx="56" cy="852" r="11" fill="#0b0d0e"/>
+<text x="56" y="856" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">15</text>
+<line x1="760" y1="892" x2="1171" y2="892" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="970.0" y="885" text-anchor="middle" font-size="11" fill="#4c5257">verify + consume code</text>
+<circle cx="970.0" cy="892" r="0" fill="none"/>
+<text x="52" y="896" font-size="11" font-weight="bold" fill="#f4f7f9">16</text>
+<circle cx="56" cy="892" r="11" fill="#0b0d0e"/>
+<text x="56" y="896" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">16</text>
+<path d="M760,924 h34 v18 h-30" fill="none" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="802" y="926" font-size="11" fill="#4c5257">restore parked Authentication; saveContext; consume saved request</text>
+<text x="802" y="940" font-size="9.5" fill="#8d949a">restored, not rebuilt: a fresh token loses authenticationTime</text>
+<circle cx="56" cy="932" r="11" fill="#0b0d0e"/>
+<text x="56" y="936" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">17</text>
+<line x1="760" y1="972" x2="114" y2="972" stroke="#4c5257" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="432.5" y="965" text-anchor="middle" font-size="11" fill="#4c5257">302  -&gt;  /oauth2/authorize ... &amp;continue</text>
+<circle cx="432.5" cy="972" r="0" fill="none"/>
+<text x="52" y="976" font-size="11" font-weight="bold" fill="#f4f7f9">18</text>
+<circle cx="56" cy="972" r="11" fill="#0b0d0e"/>
+<text x="56" y="976" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">18</text>
+<rect x="36" y="1004" width="1488" height="22" rx="4" fill="#15181a"/>
+<text x="48" y="1019" font-size="10.5" font-weight="bold" fill="#f4f7f9" letter-spacing="1.6">4 - AUTHORIZATION CODE</text>
+<line x1="105" y1="1052" x2="511" y2="1052" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="312.5" y="1045" text-anchor="middle" font-size="11" fill="#4c5257">GET /oauth2/authorize ... &amp;continue</text>
+<circle cx="312.5" cy="1052" r="0" fill="none"/>
+<text x="52" y="1056" font-size="11" font-weight="bold" fill="#f4f7f9">19</text>
+<circle cx="56" cy="1052" r="11" fill="#0b0d0e"/>
+<text x="56" y="1056" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">19</text>
+<path d="M520,1084 h34 v18 h-30" fill="none" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="562" y="1086" font-size="11" fill="#4c5257">replay saved request; validate client, redirect_uri, PKCE</text>
+<circle cx="56" cy="1092" r="11" fill="#0b0d0e"/>
+<text x="56" y="1096" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">20</text>
+<line x1="520" y1="1132" x2="114" y2="1132" stroke="#4c5257" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="312.5" y="1125" text-anchor="middle" font-size="11" fill="#4c5257">302  -&gt;  :5173/oauth/callback?code&amp;state</text>
+<circle cx="312.5" cy="1132" r="0" fill="none"/>
+<text x="52" y="1136" font-size="11" font-weight="bold" fill="#f4f7f9">21</text>
+<circle cx="56" cy="1132" r="11" fill="#0b0d0e"/>
+<text x="56" y="1136" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">21</text>
+<rect x="36" y="1164" width="1488" height="22" rx="4" fill="#15181a"/>
+<text x="48" y="1179" font-size="10.5" font-weight="bold" fill="#f4f7f9" letter-spacing="1.6">5 - CODE EXCHANGE AND FIRST API CALL</text>
+<path d="M105,1204 h34 v18 h-30" fill="none" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="147" y="1206" font-size="11" fill="#4c5257">match state against sessionStorage</text>
+<text x="147" y="1220" font-size="9.5" fill="#8d949a">mismatch -&gt; aborts before any network call</text>
+<circle cx="56" cy="1212" r="11" fill="#0b0d0e"/>
+<text x="56" y="1216" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">22</text>
+<line x1="105" y1="1252" x2="511" y2="1252" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="312.5" y="1245" text-anchor="middle" font-size="11" fill="#4c5257">POST /oauth2/token  code + code_verifier</text>
+<circle cx="312.5" cy="1252" r="0" fill="none"/>
+<text x="52" y="1256" font-size="11" font-weight="bold" fill="#f4f7f9">23</text>
+<circle cx="56" cy="1252" r="11" fill="#0b0d0e"/>
+<text x="56" y="1256" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">23</text>
+<path d="M520,1284 h34 v18 h-30" fill="none" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="562" y="1286" font-size="11" fill="#4c5257">verify PKCE; JwtGenerator signs RS256</text>
+<text x="562" y="1300" font-size="9.5" fill="#8d949a">needs auth_time from the restored Authentication</text>
+<circle cx="56" cy="1292" r="11" fill="#0b0d0e"/>
+<text x="56" y="1296" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">24</text>
+<line x1="520" y1="1332" x2="114" y2="1332" stroke="#4c5257" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="312.5" y="1325" text-anchor="middle" font-size="11" fill="#4c5257">200  access + refresh + ID token</text>
+<circle cx="312.5" cy="1332" r="0" fill="none"/>
+<text x="52" y="1336" font-size="11" font-weight="bold" fill="#f4f7f9">25</text>
+<circle cx="56" cy="1332" r="11" fill="#0b0d0e"/>
+<text x="56" y="1336" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">25</text>
+<line x1="105" y1="1372" x2="971" y2="1372" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="542.5" y="1365" text-anchor="middle" font-size="11" fill="#4c5257">GET /api/v1/accounts   Authorization: Bearer</text>
+<circle cx="542.5" cy="1372" r="0" fill="none"/>
+<text x="52" y="1376" font-size="11" font-weight="bold" fill="#f4f7f9">26</text>
+<circle cx="56" cy="1372" r="11" fill="#0b0d0e"/>
+<text x="56" y="1376" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">26</text>
+<line x1="980" y1="1412" x2="1171" y2="1412" stroke="#4c5257" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1080.0" y="1405" text-anchor="middle" font-size="11" fill="#4c5257">denylist check on jti</text>
+<circle cx="1080.0" cy="1412" r="0" fill="none"/>
+<text x="52" y="1416" font-size="11" font-weight="bold" fill="#f4f7f9">27</text>
+<circle cx="56" cy="1412" r="11" fill="#0b0d0e"/>
+<text x="56" y="1416" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">27</text>
+<line x1="980" y1="1452" x2="114" y2="1452" stroke="#4c5257" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="542.5" y="1445" text-anchor="middle" font-size="11" fill="#4c5257">200  accounts</text>
+<circle cx="542.5" cy="1452" r="0" fill="none"/>
+<text x="52" y="1456" font-size="11" font-weight="bold" fill="#f4f7f9">28</text>
+<circle cx="56" cy="1452" r="11" fill="#0b0d0e"/>
+<text x="56" y="1456" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6eaed">28</text>
+<rect x="36" y="1429" width="1488" height="252" rx="10" fill="#0b0d0e"/>
+<text x="60" y="1459" font-size="14" font-weight="bold" fill="#e6eaed">Where it breaks &#8212; and what it looks like</text>
+<text x="60"  y="1487" font-size="9.5" fill="#f4f7f9" letter-spacing="1.2">STEP</text>
+<text x="122" y="1487" font-size="9.5" fill="#f4f7f9" letter-spacing="1.2">FAILURE</text>
+<text x="330" y="1487" font-size="9.5" fill="#f4f7f9" letter-spacing="1.2">CAUSE</text>
+<text x="1055" y="1487" font-size="9.5" fill="#f4f7f9" letter-spacing="1.2">SYMPTOM</text>
+<line x1="60" y1="1502" x2="1476" y2="1502" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1518" font-size="10.5" fill="#8d949a" font-family="monospace">7 / 15</text>
+<text x="122" y="1518" font-size="11" fill="#e6eaed">Rate limited</text>
+<text x="330" y="1518" font-size="11" fill="#8d949a">CRITICAL tier exhausted, or an escalating block still counting down</text>
+<text x="1055" y="1518" font-size="10.5" fill="#b4564a" font-family="monospace">429 + Retry-After</text>
+<line x1="60" y1="1525" x2="1476" y2="1525" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1541" font-size="10.5" fill="#8d949a" font-family="monospace">9</text>
+<text x="122" y="1541" font-size="11" fill="#e6eaed">Wrong password</text>
+<text x="330" y="1541" font-size="11" fill="#8d949a">LoginAttemptService records it; progressive lock after N failures</text>
+<text x="1055" y="1541" font-size="10.5" fill="#b4564a" font-family="monospace">302 /login?error</text>
+<line x1="60" y1="1548" x2="1476" y2="1548" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1564" font-size="10.5" fill="#8d949a" font-family="monospace">16</text>
+<text x="122" y="1564" font-size="11" fill="#e6eaed">Wrong or expired code</text>
+<text x="330" y="1564" font-size="11" fill="#8d949a">challenge survives; burned once the attempt bound is passed</text>
+<text x="1055" y="1564" font-size="10.5" fill="#b4564a" font-family="monospace">302 /login/otp?error</text>
+<line x1="60" y1="1571" x2="1476" y2="1571" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1587" font-size="10.5" fill="#8d949a" font-family="monospace">15</text>
+<text x="122" y="1587" font-size="11" fill="#e6eaed">Second submit / refresh</text>
+<text x="330" y="1587" font-size="11" fill="#8d949a">the code was already consumed, so no pending challenge remains</text>
+<text x="1055" y="1587" font-size="10.5" fill="#b4564a" font-family="monospace">302 /login</text>
+<line x1="60" y1="1594" x2="1476" y2="1594" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1610" font-size="10.5" fill="#8d949a" font-family="monospace">18</text>
+<text x="122" y="1610" font-size="11" fill="#e6eaed">CSP form-action</text>
+<text x="330" y="1610" font-size="11" fill="#8d949a">the SPA origin must be listed, or the browser drops the redirect silently</text>
+<text x="1055" y="1610" font-size="10.5" fill="#b4564a" font-family="monospace">stays on the OTP form</text>
+<line x1="60" y1="1617" x2="1476" y2="1617" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1633" font-size="10.5" fill="#8d949a" font-family="monospace">19</text>
+<text x="122" y="1633" font-size="11" fill="#e6eaed">Stale saved request</text>
+<text x="330" y="1633" font-size="11" fill="#8d949a">an older authorize request resumed, carrying a state the SPA no longer holds</text>
+<text x="1055" y="1633" font-size="10.5" fill="#b4564a" font-family="monospace">"No matching state found in storage"</text>
+<line x1="60" y1="1640" x2="1476" y2="1640" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1656" font-size="10.5" fill="#8d949a" font-family="monospace">23</text>
+<text x="122" y="1656" font-size="11" fill="#e6eaed">CSRF not exempt</text>
+<text x="330" y="1656" font-size="11" fill="#8d949a">Security 7 protects API endpoints by default; the client cannot send a token</text>
+<text x="1055" y="1656" font-size="10.5" fill="#b4564a" font-family="monospace">403 at the token endpoint</text>
+<line x1="60" y1="1663" x2="1476" y2="1663" stroke="rgba(230,234,237,.10)"/>
+<text x="60"  y="1679" font-size="10.5" fill="#8d949a" font-family="monospace">24</text>
+<text x="122" y="1679" font-size="11" fill="#e6eaed">Rebuilt Authentication</text>
+<text x="330" y="1679" font-size="11" fill="#8d949a">a hand-made token has no authentication time for the auth_time claim</text>
+<text x="1055" y="1679" font-size="10.5" fill="#b4564a" font-family="monospace">500 authenticationTime cannot be null</text>
+</svg>

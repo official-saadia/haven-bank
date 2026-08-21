@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 860" width="1120" height="860" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,3.5 L0,7 z" fill="#999999"/>
+    </marker>
+    <marker id="arrowLight" markerWidth="10" markerHeight="10" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,3.5 L0,7 z" fill="#999999"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="860" fill="#ffffff"/>
+
+  <!-- Backend container -->
+  <rect x="340" y="60" width="420" height="560" rx="16" ry="16" fill="#000000"/>
+  <text x="550" y="94" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">Backend (Spring Boot)</text>
+
+  <!-- Authorization Server -->
+  <rect x="380" y="130" width="340" height="100" rx="12" ry="12" fill="#ffffff"/>
+  <text x="550" y="167" text-anchor="middle" font-size="14" font-weight="bold" fill="#111111">Authorization Server</text>
+  <text x="550" y="187" text-anchor="middle" font-size="12" fill="#444444">Spring Authorization Server</text>
+  <text x="550" y="205" text-anchor="middle" font-size="12" fill="#444444">OAuth 2.1 / OIDC / JWT</text>
+
+  <!-- REST API -->
+  <rect x="380" y="290" width="340" height="90" rx="12" ry="12" fill="#ffffff"/>
+  <text x="550" y="328" text-anchor="middle" font-size="14" font-weight="bold" fill="#111111">REST API</text>
+  <text x="550" y="349" text-anchor="middle" font-size="12" fill="#444444">accounts, transfers, history</text>
+
+  <!-- Notifications -->
+  <rect x="380" y="450" width="340" height="90" rx="12" ry="12" fill="#ffffff"/>
+  <text x="550" y="488" text-anchor="middle" font-size="14" font-weight="bold" fill="#111111">Notifications</text>
+  <text x="550" y="509" text-anchor="middle" font-size="12" fill="#444444">event-driven, channel-agnostic</text>
+
+  <!-- Browser / SPA -->
+  <rect x="10" y="270" width="190" height="90" rx="14" ry="14" fill="#ffffff" stroke="#9E9E9E" stroke-width="1.5"/>
+  <text x="105" y="308" text-anchor="middle" font-size="14" font-weight="bold" fill="#111111">Browser / React SPA</text>
+  <text x="105" y="329" text-anchor="middle" font-size="12" fill="#444444">(client)</text>
+
+  <!-- Postgres cylinder -->
+  <path d="M380,714 v82 a60,14 0 0 0 120,0 v-82 z" fill="#F5F5F5" stroke="#6E6E6E" stroke-width="1.5"/>
+  <ellipse cx="440" cy="714" rx="60" ry="14" fill="#F5F5F5" stroke="#6E6E6E" stroke-width="1.5"/>
+  <text x="440" y="762" text-anchor="middle" font-size="13" font-weight="bold" fill="#111111">Postgres</text>
+
+  <!-- Redis -->
+  <rect x="590" y="715" width="200" height="90" rx="14" ry="14" fill="#F5F5F5" stroke="#6E6E6E" stroke-width="1.5"/>
+  <text x="690" y="745" text-anchor="middle" font-size="13" font-weight="bold" fill="#111111">Redis</text>
+  <text x="690" y="765" text-anchor="middle" font-size="11" fill="#444444">cache, rate limits,</text>
+  <text x="690" y="782" text-anchor="middle" font-size="11" fill="#444444">OTP, token denylist</text>
+
+  <!-- Email provider -->
+  <rect x="880" y="450" width="190" height="90" rx="14" ry="14" fill="#ffffff" stroke="#9E9E9E" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="975" y="488" text-anchor="middle" font-size="14" font-weight="bold" fill="#111111">Email Provider</text>
+  <text x="975" y="509" text-anchor="middle" font-size="12" fill="#444444">external</text>
+
+  <!-- e1: browser -> auth server -->
+  <path d="M200,297 H300 V180 H374" fill="none" stroke="#999999" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="330" y="168" text-anchor="end" font-size="11" fill="#999999">login (OAuth 2.1 / OIDC + PKCE)</text>
+
+  <!-- e2: browser -> REST API -->
+  <path d="M200,337 H374" fill="none" stroke="#999999" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="334" y="330" text-anchor="end" font-size="11" fill="#999999">API calls (JWT bearer)</text>
+
+  <!-- e3: REST API -> Auth Server (JWKS) -->
+  <path d="M550,290 V236" fill="none" stroke="#999999" stroke-width="1.5" marker-end="url(#arrowLight)"/>
+  <text x="562" y="268" font-size="11" fill="#999999">validate token (JWKS)</text>
+
+  <!-- e4: REST API -> Notifications -->
+  <path d="M550,380 V444" fill="none" stroke="#999999" stroke-width="1.5" marker-end="url(#arrowLight)"/>
+  <text x="562" y="418" font-size="11" fill="#999999">emit events</text>
+
+  <!-- e5: Notifications -> Email -->
+  <path d="M720,495 H874" fill="none" stroke="#999999" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="797" y="487" text-anchor="middle" font-size="11" fill="#999999">send email</text>
+
+  <!-- e6: Backend -> Postgres -->
+  <path d="M440,620 V694" fill="none" stroke="#999999" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="430" y="662" text-anchor="end" font-size="11" fill="#999999">users, accounts, ledger, audit</text>
+
+  <!-- e7: Backend -> Redis -->
+  <path d="M690,620 V709" fill="none" stroke="#999999" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="702" y="662" font-size="11" fill="#999999">OTP, rate limits, denylist</text>
+</svg>

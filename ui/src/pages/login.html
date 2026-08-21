@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Sign in - Haven Bank</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/auth.css}" href="/css/auth.css"/>
+</head>
+<body>
+    <p class="brand">Haven Bank</p>
+    <div class="card">
+        <h1>Sign in</h1>
+        <form th:action="@{/login}" method="post">
+            <label for="username">Email</label>
+            <input type="email" id="username" name="username" autocomplete="username" required/>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required/>
+            <button type="submit">Continue</button>
+            <p class="error" th:if="${param.error}">Invalid email or password.</p>
+            <p class="error" th:if="${param.locked}">Your account is temporarily locked after repeated attempts. Please try again later.</p>
+        </form>
+        <!-- Registration lives in the SPA, which is a different origin, so the URL is templated in
+             from app.spa.base-url rather than hard-coded. -->
+        <a class="secondary" th:href="${registerUrl}" href="http://localhost:5173/register">Open an account</a>
+    </div>
+    <script th:src="@{/js/auth.js}" src="/js/auth.js"></script>
+</body>
+</html>

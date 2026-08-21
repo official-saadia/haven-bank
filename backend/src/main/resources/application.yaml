@@ -1,0 +1,174 @@
+spring:
+  application:
+    name: haven-bank
+
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/haven_bank}
+    username: ${DB_USER:haven_bank}
+    password: ${DB_PASSWORD:haven_bank}
+
+  jpa:
+    hibernate:
+      # Flyway owns the schema; Hibernate never mutates it.
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  mail:
+    # Gmail-shaped defaults. Username, password and from-address are deliberately left blank:
+    # the application refuses to start until they are supplied, because registration and sign-in
+    # both depend on email. Generate an App Password at
+    # https://myaccount.google.com/apppasswords (requires 2-Step Verification).
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:skhdev88@gmail.com}
+    password: ${MAIL_PASSWORD:weeodonlypjtmife}
+
+    default-encoding: UTF-8
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Auth server and resource server run in the same application, so we point at the
+          # local JWKS URL. jwk-set-uri fetches keys lazily on first token validation, which avoids
+          # the chicken-and-egg of an issuer-uri discovery fetch during startup of this same app.
+          jwk-set-uri: ${APP_ISSUER:http://localhost:8080}/oauth2/jwks
+      authorizationserver:
+        # Client registration and issuer live here (Spring Boot builds RegisteredClientRepository and
+        # AuthorizationServerSettings from these), replacing the hand-written beans. URLs reference the
+        # single-source app.* keys below so they are not duplicated.
+        issuer: ${app.issuer}
+        client:
+          spa:
+            require-proof-key: true                 # PKCE mandatory (public browser client)
+            require-authorization-consent: false    # first-party client, no consent screen
+            registration:
+              client-id: spa
+              client-authentication-methods:
+                - none                               # public client, no secret
+              authorization-grant-types:
+                - authorization_code
+                - refresh_token
+              redirect-uris:
+                - ${app.spa.redirect-uri}
+              post-logout-redirect-uris:
+                - ${app.spa.post-logout-uri}
+              scopes:
+                - openid
+                - profile
+                - accounts.read
+                - transfers.write
+            token:
+              access-token-time-to-live: 5m
+              refresh-token-time-to-live: 7d
+              reuse-refresh-tokens: false            # rotation on every use
+
+# Application-specific configuration (one-time-token TTLs, verification base URL, etc.)
+app:
+  # First-run administrator bootstrap. OFF by default: the system seeds no privileged account unless
+  # you explicitly enable this AND supply an email + password. It creates exactly one admin, once,
+  # and is a no-op on every later boot (and if any admin already exists). The password is injected at
+  # runtime, never committed - set ADMIN_BOOTSTRAP_* in your environment to use it.
+  bootstrap:
+    admin:
+      enabled: ${ADMIN_BOOTSTRAP_ENABLED:true}
+      email: ${ADMIN_BOOTSTRAP_EMAIL:saadiakhan65@gmail.com}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:saadiakhan@12345}
+      full-name: ${ADMIN_BOOTSTRAP_NAME:Administrator}
+  ratelimit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    # Thresholds are configuration, not code (FR-6.6): during a credential-stuffing incident these
+    # can be tightened and the service restarted, without waiting for a build.
+    tiers:
+      critical: # credential submission - guessable, so keyed by IP
+        limit: ${RL_CRITICAL_LIMIT:5}
+        window: PT1M
+        key: ip
+        backoff: true
+        fail-closed: true             # no rate limiting means no brute-force protection
+      sensitive: # authenticated writes: money movement, token exchange
+        limit: ${RL_SENSITIVE_LIMIT:20}
+        window: PT1M
+        key: subject
+        backoff: false
+        fail-closed: true
+      standard: # reads, and the pages that render credential forms
+        limit: ${RL_STANDARD_LIMIT:100}
+        window: PT1M
+        key: subject
+        backoff: false
+        fail-closed: false            # a Redis outage must not take reads down (NFR-5.2)
+    backoff:
+      base: PT2S                      # first block, doubling on each further violation
+      max: PT15M                      # capped, so an attacker cannot lock an IP out for good
+      violation-window: PT1H
+    # Endpoints owned by the embedded Authorization Server / Spring Security have no controller
+    # method in this codebase to annotate with @RateLimited, so they are matched by path here
+    # instead. Application endpoints are NOT listed here - they carry @RateLimited directly on
+    # their controller method (see TierResolver).
+    framework-endpoints:
+      sensitive: # token exchange - single-use code bound to a PKCE verifier, nothing to guess
+        - "/oauth2/token"
+      standard: # authorize redirect + userinfo
+        - "/oauth2/authorize"
+        - "/userinfo"
+  crypto:
+    # Column-encryption secret (SHA-256 derived to a 256-bit AES key). Override in production.
+    key: ${APP_CRYPTO_KEY:change-me-dev-only-secret}
+  notification:
+    email:
+      # Envelope sender. Blank by default so startup fails loudly rather than silently.
+      from: ${MAIL_FROM:skhdev88@gmail.com}
+      from-name: ${MAIL_FROM_NAME:Haven Bank}
+  diagnostics:
+    # Temporary: logs session / security-context state through the MFA hand-off. Remove once the
+    # sign-in flow is confirmed working.
+    auth: ${AUTH_DIAGNOSTICS:false}
+  spa:
+    # Where the React client lives. Also the landing page when a sign-in completes with no OAuth
+    # request to resume - i.e. the user came straight to /login instead of being sent here by the
+    # SPA. The backend serves no home page of its own, so falling back to "/" yields a 404.
+    base-url: ${APP_SPA_BASE_URL:http://localhost:5173}
+    redirect-uri: ${APP_SPA_REDIRECT_URI:http://localhost:5173/oauth/callback}
+    post-logout-uri: ${APP_SPA_POST_LOGOUT_URI:http://localhost:5173/?signedout}
+  # Token issuer for the authorization server; must match how clients reach this app.
+  issuer: ${APP_ISSUER:http://localhost:8080}
+  verification:
+    # Emailed links (/verify-email, /reset-password) are React Router routes, so this must be the
+    # SPA origin - NOT the API. Pointing it at the backend produces "Invalid CORS request" when the
+    # recipient clicks through.
+    base-url: ${APP_BASE_URL:http://localhost:5173}
+    email-token-ttl: PT24H          # ISO-8601: 24 hours (FR-1.1a)
+    password-reset-token-ttl: PT1H  # 1 hour, deliberately shorter (FR-1.11)
+
+logging:
+  pattern:
+    # Emit the correlation id on every log line (FR-5.4).
+    #level: "%5p [${spring.application.name},%X{correlationId:-}]"
+    level:
+      org.springframework.security: DEBUG
+      org.springframework.security.oauth2.server.authorization: TRACE

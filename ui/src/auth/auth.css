@@ -1,0 +1,173 @@
+/* ============================================================================
+   Haven Bank - server-rendered auth pages (login, OTP).
+
+   These pages are part of the same product as the SPA, so they use the same tokens
+   and the same class names as ui/src/styles.css - .authcard, .field*, .btn*, .notice.
+   Anything renamed here has to be renamed there too, and vice versa.
+   ========================================================================== */
+
+:root {
+  /* Surfaces */
+  --obsidian: #0b0d0e;
+  --obsidian-2: #15181a;
+  --page: #faf5f5;
+  --page-2: #f1e9e9;
+
+  /* Ink */
+  --silver-bright: #e6eaed;
+  --silver-deep: #8d949a;
+  --sheen: #f4f7f9;
+  --ink: #0b0d0e;
+  --ink-muted: #4c5257;
+
+  /* Edges */
+  --line-dark: rgba(230, 234, 237, 0.14);
+  --line-light: rgba(11, 13, 14, 0.16);
+
+  --alert: #d98a80;
+
+  --display: "Fraunces", Georgia, serif;
+  --body: "Inter", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --wordmark: "Pinyon Script", cursive;
+
+  --radius: 6px;
+  --plate: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 14px 34px rgba(0, 0, 0, 0.26);
+  --press: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 2px 4px rgba(11, 13, 14, 0.18);
+  --press-hover: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 14px rgba(11, 13, 14, 0.26);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: clamp(1.5rem, 4vw, 3.5rem) 1.5rem;
+  font-family: var(--body);
+  color: var(--silver-bright);
+  background: var(--obsidian);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The mark, ink on the page - the same treatment the SPA gives it outside the rail, at a larger
+   size here because it is the only thing above the card. The shadow is the same lift the panels
+   and buttons use, scaled down: offset down, no spread, low alpha. Anything heavier turns the
+   thin Pinyon strokes muddy. */
+.mark {
+  font-family: var(--wordmark);
+  font-size: clamp(2.9rem, 7vw, 3.6rem); line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--silver-bright);
+  /* Pinyon ships in one weight; the stroke adds it evenly without blobbing the joins. */
+  -webkit-text-stroke: 0.5px var(--silver-bright);
+  /* A soft white halo, in the same near-white the app uses for ink, so the mark lifts off black. */
+  text-shadow: 0 0 20px rgba(244, 247, 249, 0.40), 0 0 6px rgba(244, 247, 249, 0.30);
+  margin: 0 0 1.6rem;
+  text-decoration: none;
+}
+
+/* --- The panel: a milled plate, identical to .authcard in the SPA --- */
+.authcard {
+  background: var(--obsidian-2);
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius);
+  box-shadow: var(--plate);
+  color: var(--silver-bright);
+  width: min(26rem, 100%);
+  padding: 2rem 2.25rem 2.25rem;
+  animation: rise 0.4s ease both;
+}
+.authcard--otp { text-align: center; }
+
+.authcard__title {
+  font-family: var(--display); font-weight: 600; font-size: 1.55rem;
+  margin: 0 0 1.25rem; color: var(--silver-bright); letter-spacing: -0.01em;
+}
+.lede { color: var(--silver-deep); font-size: 0.9rem; line-height: 1.55; margin: 0 0 1.25rem; }
+
+.form { display: flex; flex-direction: column; gap: 1rem; }
+
+/* --- Fields --- */
+.field { display: flex; flex-direction: column; gap: 0.35rem; text-align: left; }
+.field__label { font-size: 0.82rem; font-weight: 500; color: var(--silver-deep); }
+.field__input {
+  width: 100%;
+  font: 400 1rem var(--body);
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line-dark); border-radius: var(--radius);
+  background: var(--obsidian-2); color: var(--silver-bright);
+}
+.field__input::placeholder { color: var(--silver-deep); }
+.field__input:focus-visible { outline: 2px solid var(--sheen); outline-offset: 1px; border-color: var(--sheen); }
+.field__hint { font-size: 0.78rem; color: var(--silver-deep); }
+/* Field-level validation error, in the same slot the hint occupies. */
+.field__error { font-size: 0.78rem; color: var(--alert); }
+/* A small link that sits just under a field, right-aligned - e.g. "Forgot password?". */
+.field__aux { margin: -0.4rem 0 0; text-align: right; font-size: 0.82rem; }
+.field__aux a { color: var(--silver-deep); text-decoration: none; }
+.field__aux a:hover { color: var(--sheen); text-decoration: underline; }
+
+/* The 6-digit code gets tabular figures and air between them, so it reads as data. */
+.field__input--otp {
+  font-family: var(--mono);
+  font-size: 1.5rem; letter-spacing: 0.45rem; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Password reveal: the input and its toggle share one box (markup added by /js/auth.js). */
+.field__wrap { position: relative; display: block; }
+.field__wrap .field__input { padding-right: 2.75rem; }
+.field__reveal {
+  position: absolute; top: 50%; right: 0.5rem; transform: translateY(-50%);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: auto; margin: 0; padding: 0.3rem; box-shadow: none;
+  border: 0; border-radius: 6px; background: transparent;
+  color: var(--silver-deep); cursor: pointer; transition: color 0.15s;
+}
+.field__reveal:hover { color: var(--silver-bright); transform: translateY(-50%); box-shadow: none; }
+.field__reveal:focus-visible { outline: 2px solid var(--sheen); outline-offset: 1px; }
+
+/* --- Buttons: the same bevel logic as the SPA, inverted for an obsidian panel --- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 100%;
+  font: 600 0.95rem/1 var(--body);
+  padding: 0.8rem 1.4rem; border-radius: var(--radius);
+  cursor: pointer; border: 1px solid transparent;
+  box-shadow: var(--press);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.btn:hover { text-decoration: none; box-shadow: var(--press-hover); transform: translateY(-1px); }
+/* Pressing puts it back on the surface - the shadow is the affordance, so it has to collapse. */
+.btn:active { box-shadow: var(--press); transform: translateY(0); }
+.btn:focus-visible { outline: 2px solid var(--sheen); outline-offset: 2px; }
+
+/* Inside an obsidian panel the polarity inverts, so the action still reads. */
+.btn--primary { background: var(--silver-bright); color: var(--obsidian); border-color: var(--silver-bright); }
+.btn--primary:hover { background: var(--sheen); border-color: var(--sheen); }
+.btn--ghost { background: transparent; color: var(--silver-bright); border-color: var(--line-dark); }
+.btn--ghost:hover { border-color: var(--silver-bright); color: var(--sheen); }
+
+/* --- Notices --- */
+.notice { font-size: 0.9rem; padding: 0.7rem 0.85rem; border-radius: var(--radius); margin: 0; text-align: left; }
+.notice--error { background: rgba(217, 138, 128, 0.12); color: var(--alert); border: 1px solid rgba(217, 138, 128, 0.35); }
+.notice--info { background: rgba(230, 234, 237, 0.08); color: var(--silver-bright); border: 1px solid var(--line-dark); }
+
+.cardfoot { margin: 1.25rem 0 0; font-size: 0.9rem; color: var(--silver-deep); }
+.cardfoot a { color: var(--sheen); }
+
+/* A rule with a word in it, to separate the primary action from the alternative. */
+.orline {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin: 1.25rem 0 0.85rem;
+  font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--silver-deep);
+}
+.orline::before, .orline::after { content: ""; flex: 1; height: 1px; background: var(--line-dark); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1240, height: 820 } });
+await page.goto('http://localhost:4173/admin-preview', { waitUntil: 'load' });
+await page.waitForTimeout(900);
+await page.screenshot({ path: '/tmp/admin.png', fullPage: true });
+await page.goto('http://localhost:4173/preview', { waitUntil: 'load' });
+await page.waitForTimeout(900);
+await page.screenshot({ path: '/tmp/dashboard.png', fullPage: true });
+await browser.close();
+console.log('done');

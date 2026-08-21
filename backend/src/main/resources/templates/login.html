@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Sign in - Haven Bank</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <!-- Same families, weights and optical sizes as ui/index.html, so the two halves of the
+         product render identically. Requires the auth-page CSP in SecurityHeadersFilter. -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/auth.css}" href="/css/auth.css"/>
+</head>
+<body>
+<p class="mark">Haven Bank</p>
+<div class="authcard">
+    <h1 class="authcard__title">Sign In</h1>
+    <form class="form" th:action="@{/login}" method="post">
+        <label class="field">
+            <span class="field__label">Email</span>
+            <input class="field__input" type="email" id="username" name="username"
+                   autocomplete="username" required autofocus/>
+        </label>
+        <label class="field">
+            <span class="field__label">Password</span>
+            <input class="field__input" type="password" id="password" name="password"
+                   autocomplete="current-password" required/>
+        </label>
+        <!-- Reset lives in the SPA (a different origin), so the URL is templated in from
+             app.spa.base-url, same as the register link below. -->
+        <p class="field__aux"><a th:href="${forgotUrl}" href="http://localhost:5173/forgot-password">Forgot password?</a></p>
+        <p class="notice notice--error" th:if="${param.error}">Invalid email or password.</p>
+        <p class="notice notice--error" th:if="${param.locked}">Your account is temporarily locked after repeated attempts. Please try again later.</p>
+        <button class="btn btn--primary" type="submit">Continue</button>
+    </form>
+
+    <p class="orline">or</p>
+    <!-- Registration lives in the SPA, a different origin, so the URL is templated in from
+         app.spa.base-url rather than hard-coded or relative. -->
+    <a class="btn btn--ghost" th:href="${registerUrl}" href="http://localhost:5173/register">Open an Account</a>
+</div>
+<script th:src="@{/js/auth.js}" src="/js/auth.js"></script>
+</body>
+</html>

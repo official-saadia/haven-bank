@@ -1,0 +1,680 @@
+/* ============================================================================
+   Haven Bank - visual identity
+   Direction: a machined metal plate. Bone-white field, obsidian panels, hairline
+   edges and a single inset highlight that reads as a milled bevel.
+   Fraunces (display) / Inter (UI) / IBM Plex Mono (identity & data).
+   ========================================================================== */
+
+:root {
+  /* Surfaces */
+  --obsidian: #0b0d0e;          /* chrome, cards, forms */
+  --obsidian-2: #15181a;        /* raised: inputs, hovered rows */
+  --page: #faf5f5;              /* the page itself */
+  --page-2: #f1e9e9;            /* lifted areas on the page */
+
+  /* Ink */
+  --silver-bright: #e6eaed;     /* primary text on obsidian */
+  --silver-deep: #8d949a;       /* secondary text on obsidian */
+  --sheen: #f4f7f9;             /* emphasis, focus, metallic top-light */
+  --ink: #0b0d0e;               /* text on silver */
+  --ink-muted: #4c5257;         /* secondary text on silver */
+
+  /* Edges */
+  --line-dark: rgba(230, 234, 237, 0.14);
+  --line-light: rgba(11, 13, 14, 0.16);
+
+  /* Signals - used sparingly, this palette is deliberately monochrome */
+  --alert: #d98a80;
+  --alert-ink: #8a2c20;
+
+  --display: "Fraunces", Georgia, serif;
+  --body: "Inter", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --wordmark: "Pinyon Script", cursive;
+
+  --radius: 6px;
+  /* The chrome casts onto the working surface. Grey rather than black: against the warm bone page
+     a pure-black shadow reads as a hard edge, this one dissolves into it. Shared by the top bar
+     and the rail so the two casts meet cleanly at the corner. */
+  --cast: rgba(76, 82, 87, 0.30);
+  /* The bevel: a hairline of light along the top edge, then depth beneath. */
+  --plate: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 14px 34px rgba(0, 0, 0, 0.26);
+  /* Buttons get the same bevel logic at a smaller scale: top highlight, then lift. */
+  --press: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 2px 4px rgba(11, 13, 14, 0.18);
+  --press-hover: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 14px rgba(11, 13, 14, 0.26);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--body);
+  color: var(--ink);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--ink); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- App chrome: a spanning top bar, an obsidian rail beneath it, the surface to its right --- */
+:root { --topbar-h: 4.75rem; --rail-w: 16rem; }
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--rail-w) 1fr;
+  grid-template-rows: var(--topbar-h) 1fr;
+}
+
+/* The masthead runs the full width, so the mark is centred on the page rather than on the surface
+   beside the rail. Obsidian, continuous with the rail below it - the two read as one L-shaped
+   chrome, with the working surface set into the corner. */
+.topbar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--obsidian);
+  border-bottom: 1px solid var(--line-dark);
+  box-shadow: 0 4px 14px var(--cast);
+  position: sticky; top: 0; z-index: 10;
+}
+/* The rail/surface separator continues up through the bar, so the chrome is divided on one
+   unbroken line. Anchored to --rail-w, the same token the grid column uses. */
+.topbar::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: var(--rail-w);
+  width: 1px; background: var(--line-dark);
+}
+.topbar__mark {
+  font-family: var(--wordmark);
+  font-size: 2.3rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--silver-bright);
+  /* Pinyon ships in one weight; the stroke adds it evenly without blobbing the joins. */
+  -webkit-text-stroke: 0.5px var(--silver-bright);
+  /* A soft white halo, same near-white the app uses for ink, matching the login/gate wordmark. */
+  text-shadow: 0 0 16px rgba(244, 247, 249, 0.34), 0 0 5px rgba(244, 247, 249, 0.26);
+  text-decoration: none;
+}
+.topbar__mark:hover {
+  color: var(--sheen); -webkit-text-stroke-color: var(--sheen); text-decoration: none;
+}
+
+.rail {
+  background: var(--obsidian);
+  /* The separator: a hairline of light along the rail's own edge - the same milled bevel the
+     panels use - then the cast beyond it onto the surface. */
+  border-right: 1px solid var(--line-dark);
+  box-shadow: 4px 0 14px var(--cast);
+  z-index: 5;
+  color: var(--silver-bright);
+  display: flex; flex-direction: column;
+  padding: 1.6rem 1.1rem 1.4rem;
+  /* The rail stays put while the surface scrolls, docked under the bar. */
+  position: sticky; top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h)); overflow-y: auto;
+}
+
+.rail__nav { display: flex; flex-direction: column; align-items: stretch; gap: 0.1rem; }
+.rail__label {
+  font-family: var(--mono); font-size: 0.65rem;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--silver-deep); opacity: 0.72;
+  margin: 1.6rem 0 0.45rem; padding-left: 0.75rem;
+}
+.rail__nav > .rail__label:first-child { margin-top: 0; }
+
+/* One rule serves both the links and the sign-out button, so they sit on the same baseline. */
+.rail__link {
+  display: block; width: 100%; text-align: left;
+  font: 400 0.95rem/1.2 var(--body);
+  color: var(--silver-deep);
+  padding: 0.62rem 0.75rem;
+  border: 0; border-left: 2px solid transparent; border-radius: var(--radius);
+  background: none; cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.rail__link:hover { background: var(--obsidian-2); color: var(--silver-bright); text-decoration: none; }
+.rail__link--on {
+  background: var(--obsidian-2); color: var(--sheen);
+  border-left-color: var(--silver-bright); font-weight: 500;
+}
+.rail__link:focus-visible { outline: 2px solid var(--sheen); outline-offset: 1px; }
+
+.rail__foot { margin-top: auto; padding-top: 1.4rem; border-top: 1px solid var(--line-dark); }
+.rail__note { margin: 0.8rem 0.75rem 0; font-size: 0.72rem; line-height: 1.5; color: var(--silver-deep); }
+
+.linklike {
+  border: 0; background: none; cursor: pointer;
+  font: inherit; color: var(--silver-deep); padding: 0;
+}
+.linklike:hover { text-decoration: underline; color: var(--sheen); }
+
+/* The surface. Lighter than the page so the obsidian panels on it read as plates.
+   Content is left-aligned so the rail and the content share one reading edge — a centred
+   narrow form leaves a dead gap beside the rail and reads as a landing page, not a tool. */
+.canvas {
+  background: var(--obsidian);
+  min-width: 0;
+  display: flex; align-items: flex-start; justify-content: flex-start;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+/* The working surface is dark, continuous with the chrome. Rather than rewriting every rule that
+   assumed a light field, the four surface tokens are redefined for this subtree - so .page__title,
+   .dash__total, .adminnav and the rest invert in one place. The bare landing shell is excluded;
+   it is still light. */
+.canvas:not(.canvas--bare) {
+  color: var(--silver-bright);
+  --ink: var(--silver-bright);
+  --ink-muted: var(--silver-deep);
+  --page-2: var(--obsidian);
+  --line-light: var(--line-dark);
+}
+/* Two rules name the raw colours rather than the tokens, so they need flipping by hand. */
+.canvas:not(.canvas--bare) .adminnav a.active { border-bottom-color: var(--silver-bright); }
+/* On the dark surface the ghost outline is drawn in silver rather than a hairline, so secondary
+   actions still read as buttons. */
+.canvas:not(.canvas--bare) .btn--ghost {     color: var(--obsidian); background: var(--silver-bright); border-color: var(--silver-bright); }
+.canvas:not(.canvas--bare) .btn--ghost:hover { color: var(--obsidian); background: var(--silver-bright); border-color: var(--silver-bright); }
+/* Public pages (landing, register, reset) have no rail context to anchor to, so they stay centred. */
+.canvas--center { justify-content: center; }
+
+/* --- Bare shell: the landing page, with the rail dropped entirely --- */
+.shell--bare { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+/* No rail means no lifted surface to distinguish - the hero sits directly on the page. */
+.canvas--bare {
+  background: var(--obsidian); align-items: center;
+  color: var(--silver-bright);
+  --ink: var(--silver-bright);
+  --ink-muted: var(--silver-deep);
+}
+/* A soft white halo on the mark, in the same near-white the app uses for ink, so it lifts off black. */
+.canvas--bare .hero__mark { text-shadow: 0 0 22px rgba(244, 247, 249, 0.40), 0 0 6px rgba(244, 247, 249, 0.30); }
+
+/* Below the breakpoint the rail lies down across the top rather than squeezing the surface. */
+@media (max-width: 880px) {
+  .shell { grid-template-columns: 1fr; grid-template-rows: var(--topbar-h) auto 1fr; }
+  .topbar__mark { font-size: 2rem; }
+  .rail { position: static; height: auto; overflow: visible; padding: 1.1rem 1rem; }
+  .rail__nav { flex-direction: row; flex-wrap: wrap; gap: 0.25rem; margin-top: 1rem; }
+  .rail__label, .rail__note { display: none; }
+  .rail__link { width: auto; border-left: 0; border-bottom: 2px solid transparent; }
+  .rail__link--on { border-left: 0; border-bottom-color: var(--silver-bright); }
+  .rail__foot { margin-top: 0.75rem; padding-top: 0.75rem; }
+}
+
+/* --- Hero --- */
+.hero { max-width: 44rem; animation: rise 0.5s ease both; }
+/* The mark leads the page here rather than sitting in chrome, so it is set display-scale. */
+.hero__mark {
+  font-family: var(--wordmark);
+  font-size: clamp(3.2rem, 8vw, 5rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  /* Pinyon ships in one weight; the stroke adds it evenly without blobbing the joins. */
+  -webkit-text-stroke: 0.6px var(--ink);
+  margin: 0 0 1.4rem;
+}
+.eyebrow {
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.18em;
+  font-size: 0.78rem; color: var(--ink-muted); margin: 0 0 1rem;
+}
+.display {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2.8rem, 6.6vw, 4.4rem);
+  line-height: 1.05;
+  margin: 0 0 1.25rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.display em { font-style: italic; color: var(--ink-muted); }
+.lede { font-size: 1.15rem; line-height: 1.6; color: var(--ink-muted); margin: 0 0 1.75rem; max-width: 36rem; }
+.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+/* Sign in is the expected action; registering is the occasional one, so they stack rather than
+   compete side by side. Bounded width keeps them from stretching to the hero's full measure. */
+.actions--stacked {
+  flex-direction: column; flex-wrap: nowrap;
+  align-items: stretch; gap: 0.65rem; max-width: 21rem;
+}
+
+/* The entry gate: mark, one line of status, nothing else. Centred, since there is no body copy
+   to establish a reading edge. */
+.hero--gate { max-width: 30rem; text-align: center; }
+.hero--gate .actions--stacked { margin: 0 auto; }
+.gate__note { font-size: 1.05rem; color: var(--ink-muted); margin: 0 0 1.75rem; }
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 600 0.95rem/1 var(--body);
+  padding: 0.8rem 1.4rem; border-radius: var(--radius);
+  cursor: pointer; border: 1px solid transparent;
+  box-shadow: var(--press);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.btn:hover { text-decoration: none; box-shadow: var(--press-hover); transform: translateY(-1px); }
+/* Pressing puts it back on the surface — the shadow is the affordance, so it has to collapse. */
+.btn:active { box-shadow: var(--press); transform: translateY(0); }
+.btn:disabled { box-shadow: none; transform: none; }
+@media (prefers-reduced-motion: reduce) { .btn, .btn:hover { transform: none; } }
+/* The primary action is a silver plate, on every surface. It used to invert - black on the light
+   field, silver inside obsidian panels - which left black buttons stranded wherever a context
+   was missed. One polarity everywhere is both simpler and impossible to get wrong. The border
+   gives it an edge on the light landing page, where silver-on-bone has little contrast. */
+.btn--primary {
+  background: var(--silver-bright); color: var(--obsidian);
+  border-color: var(--silver-deep);
+}
+.btn--primary:hover { background: var(--sheen); color: var(--obsidian); border-color: var(--silver-bright); }
+.btn--primary:disabled { background: var(--silver-deep); color: var(--obsidian); cursor: not-allowed; }
+/* Ghost stays token-driven, so it takes ink on the light page and silver on the dark surface. */
+.btn--ghost { background: var(--silver-bright); color: var(--obsidian);
+  border-color: var(--silver-deep);}
+.btn--ghost:hover { background: var(--sheen); color: var(--obsidian); border-color: var(--silver-bright);}
+/* Landing-page scale, to sit under the enlarged hero type. */
+.btn--lg { font-size: 1.02rem; padding: 0.95rem 1.6rem; }
+/* Destructive confirm action (e.g. removing a payee). Muted alert fill so it reads as the weighty
+   choice without shouting; the safe way out is the neighbouring ghost Cancel. */
+.btn--danger { background: var(--alert); color: var(--obsidian); border-color: var(--alert); }
+.btn--danger:hover { background: #e29b92; border-color: #e29b92; color: var(--obsidian); }
+
+/* Panels are obsidian, so a ghost outline there is drawn in silver. */
+.authcard .btn--ghost,
+.passbook .btn--ghost,
+.rolecard .btn--ghost,
+.table .btn--ghost { color: var(--silver-bright); border-color: var(--silver-deep); }
+.authcard .btn--ghost:hover,
+.passbook .btn--ghost:hover,
+.rolecard .btn--ghost:hover,
+.table .btn--ghost:hover { color: var(--obsidian); background: var(--silver-bright); border-color: var(--silver-bright); }
+
+/* --- Panels: every card, form and table is a milled plate --- */
+/* Panels are lifted one step off the page rather than being the same black, which is what makes
+   them read as plates now that the surface behind them is dark too. */
+.passbook, .acct, .ledger, .table, .rolecard {
+  background: var(--obsidian-2);
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius);
+  box-shadow: var(--plate);
+  color: var(--silver-bright);
+}
+/* A form is not a plate. It sits directly on the page with no rectangle around it. */
+.authcard { color: var(--silver-bright); }
+.authcard a, .passbook a, .acct a, .ledger a, .table a, .rolecard a { color: var(--silver-bright); }
+
+.authcard {
+  width: 100%;
+  padding: 0;
+  animation: rise 0.4s ease both;
+}
+/* Full-bleed container, bounded fields: an input stretched across the whole surface is unusable,
+   and the eye loses the line between label and control. */
+.authcard .form, .authcard .cardfoot, .authcard > .lede, .authcard > .notice { max-width: 30rem; }
+.authcard__title { font-family: var(--wordmark); font-weight: 400; font-size: 2.1rem; line-height: 1; margin: 0 0 1.5rem; color: var(--silver-bright); -webkit-text-stroke: 0.5px var(--silver-bright); }
+.form { display: flex; flex-direction: column; gap: 1rem; }
+/* Form buttons sit in a right-aligned row at content width, so the primary action no longer
+   stretches the full form. The row wraps before it would overflow on a narrow card. */
+.form__actions { display: flex; justify-content: flex-end; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.35rem; }
+.form__actions .btn { width: auto; }
+.cardfoot { margin: 1.25rem 0 0; font-size: 0.9rem; color: var(--silver-deep); }
+.cardfoot a { color: var(--sheen); }
+
+/* --- Fields --- */
+.field { display: flex; flex-direction: column; gap: 0.35rem; }
+.field__label { font-size: 0.82rem; font-weight: 500; color: var(--silver-deep); }
+.field__input {
+  font: 400 1rem var(--body);
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line-dark); border-radius: var(--radius);
+  background: var(--obsidian-2); color: var(--silver-bright);
+}
+.field__input::placeholder { color: var(--silver-deep); }
+.field__input:focus-visible { outline: 2px solid var(--sheen); outline-offset: 1px; border-color: var(--sheen); }
+.field__hint { font-size: 0.78rem; color: var(--silver-deep); }
+/* Field-level validation error, in the same slot the hint occupies. */
+.field__error { font-size: 0.78rem; color: var(--alert); }
+/* Inside a panel the input would match the panel, so it inverts direction and sits recessed. */
+.passbook .field__input, .acct .field__input, .ledger .field__input,
+.table .field__input, .rolecard .field__input { background: var(--obsidian); }
+
+/* Password reveal: the input and its toggle share one box. */
+.field__wrap { position: relative; display: block; }
+.field__wrap .field__input { width: 100%; padding-right: 2.75rem; }
+.field__reveal {
+  position: absolute; top: 50%; right: 0.5rem; transform: translateY(-50%);
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 6px; background: transparent;
+  color: var(--silver-deep); cursor: pointer;
+  padding: 0.3rem; transition: color 0.15s;
+}
+.field__reveal:hover { color: var(--silver-bright); }
+.field__reveal:focus-visible { outline: 2px solid var(--sheen); outline-offset: 1px; }
+.field__input[aria-invalid="true"] { border-color: var(--alert); }
+
+/* Checkbox rows sit inside .form, so they inherit its gap rather than adding margin. */
+.checkfield { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: var(--silver-deep); cursor: pointer; }
+.checkfield input { accent-color: var(--silver-bright); width: 1rem; height: 1rem; cursor: pointer; }
+.checkfield:hover { color: var(--silver-bright); }
+
+
+/* --- Notices --- */
+.notice { font-size: 0.9rem; padding: 0.7rem 0.85rem; border-radius: var(--radius); margin: 0; }
+.notice--error { background: rgba(217, 138, 128, 0.12); color: var(--alert); border: 1px solid rgba(217, 138, 128, 0.35); }
+.notice--info { background: rgba(230, 234, 237, 0.08); color: var(--silver-bright); border: 1px solid var(--line-dark); }
+
+/* --- Splash --- */
+.splash {
+  min-height: 60vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 0.75rem;
+}
+.splash__mark { font-family: var(--wordmark); font-size: 2.1rem; line-height: 1; color: var(--ink); -webkit-text-stroke: 0.5px var(--ink); }
+.splash__label { color: var(--ink-muted); }
+
+/* --- Passbook (signature) --- */
+.passbook {
+  width: 100%;
+  overflow: hidden;
+  animation: rise 0.45s ease both;
+}
+.passbook__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  background: var(--obsidian);
+  color: var(--silver-bright);
+  border-bottom: 1px solid var(--silver-deep);
+}
+.passbook__brand { font-family: var(--wordmark); font-size: 1.5rem; line-height: 1; color: var(--silver-bright); -webkit-text-stroke: 0.5px var(--silver-bright); }
+.passbook__kind { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--silver-deep); }
+.passbook__rows { margin: 0; padding: 0.5rem 1.5rem; }
+.passbook__row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+  padding: 0.85rem 0; border-bottom: 1px solid var(--line-dark);
+}
+.passbook__row:last-child { border-bottom: 0; }
+.passbook__row dt { color: var(--silver-deep); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.passbook__row dd { margin: 0; text-align: right; font-weight: 500; color: var(--silver-bright); }
+.mono { font-family: var(--mono); font-weight: 400; font-size: 0.86rem; }
+.passbook__foot { display: flex; justify-content: flex-end; padding: 1.25rem 1.5rem; border-top: 1px solid var(--line-dark); }
+.passbook__foot .btn { width: auto; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* --- Modal: an overlay dialog above the current page (deposit / withdraw) --- */
+.modal {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  /* The page dims behind, so the dialog is clearly the only live surface. */
+  background: rgba(6, 7, 8, 0.62);
+  animation: fade 0.15s ease both;
+}
+.modal__panel {
+  width: min(26rem, 100%);
+  background: var(--obsidian-2);
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius);
+  box-shadow: var(--plate);
+  color: var(--silver-bright);
+  padding: 2.1rem 1.75rem 1.75rem;
+  display: flex; flex-direction: column; gap: 0.9rem;
+  animation: rise 0.2s ease both;
+}
+/* The wordmark face has tall ascenders; at line-height 1 they kiss the panel edge, so the title
+   gets a touch of top padding and a slightly looser line to breathe. */
+.modal__title { font-family: var(--wordmark); font-weight: 400; font-size: 1.9rem; line-height: 1.2; padding-top: 0.15rem; margin: 0; -webkit-text-stroke: 0.4px var(--silver-bright); }
+.modal__sub { margin: -0.35rem 0 0.25rem; font-size: 0.85rem; color: var(--silver-deep); }
+.modal__actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.35rem; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* --- Dashboard (accounts + ledger) --- */
+/* Full width. The dashboard and the account/transaction view are tabular - rows benefit from the
+   whole surface, unlike prose, which needs a bounded measure to stay readable. */
+.dash { width: 100%; animation: rise 0.45s ease both; }
+/* Page title and the way back, on one line above the account summary. Baseline-aligned so the
+   script heading and the link sit on the same rule rather than centring against each other. */
+.dash__bar {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+  padding-bottom: 0.9rem; margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line-light);
+}
+.dash__bar .dash__heading { margin: 0; }
+.dash__bar a { color: var(--ink-muted); font-size: 0.9rem; }
+.dash__bar a:hover { color: var(--ink); }
+
+/* The action aligns to the foot of the text column - the "Total across…" note on the dashboard,
+   the account number on the detail page - rather than to the heading at the top, so it sits
+   level with the bottom of the block it acts on. */
+.dash__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.75rem; }
+/* The page heading, set in the wordmark face so it reads as part of the identity rather than as
+   another UI label. Pinyon ships in one weight, so the stroke carries the weight instead. */
+.dash__heading {
+  font-family: var(--wordmark);
+  font-size: clamp(1.9rem, 4vw, 2.4rem);
+  font-weight: 400; line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  -webkit-text-stroke: 0.5px var(--ink);
+  margin: 0 0 1.5rem;
+}
+.dash__total { font-family: var(--display); font-weight: 400; font-size: clamp(1.5rem, 3.4vw, 2rem); line-height: 1; margin: 0.75rem 0 0.4rem; letter-spacing: -0.01em; color: var(--ink); }
+.dash__cents { color: var(--ink-muted); font-size: 0.55em; }
+.dash__totalnote { color: var(--ink-muted); font-size: 0.9rem; margin: 0; }
+
+.accounts { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+.acct { display: flex; flex-direction: column; gap: 0.4rem; padding: 1.1rem 1.25rem; }
+.acct__top { display: flex; align-items: baseline; justify-content: space-between; }
+.acct__name { font-weight: 600; color: var(--silver-bright); }
+.acct__kind { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--silver-deep); }
+.acct__num { color: var(--silver-deep); font-size: 0.85rem; }
+.acct__bal { font-size: 1.5rem; font-weight: 500; margin-top: 0.25rem; color: var(--silver-bright); }
+
+.ledger { overflow: hidden; }
+.ledger__head { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--silver-deep); background: var(--obsidian); color: var(--silver-bright); }
+.ledger__head h2 { font-family: var(--wordmark); font-weight: 400; font-size: 1.65rem; line-height: 1; margin: 0; -webkit-text-stroke: 0.4px currentColor; }
+.ledger__head a { color: var(--silver-deep); font-size: 0.85rem; }
+.ledger__head a:hover { color: var(--sheen); }
+.ledger__rows { padding: 0.5rem 1.5rem; }
+/* Column header: same track sizes as a row, so the labels sit over their columns. White and bold
+   to read clearly as the table heading. */
+.ledger__cols {
+  display: grid; grid-template-columns: 10.5rem 1fr auto 6rem;
+  align-items: baseline; gap: 1rem;
+  padding: 0.9rem 1.5rem 0.7rem;
+  border-bottom: 1px solid var(--line-dark);
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--silver-bright);
+}
+.ledger__cols-amt { text-align: right; }
+/* The date column is sized for the long form ("23rd September, 2026"), the widest string it holds. */
+.ledger__row { display: grid; grid-template-columns: 10.5rem 1fr auto 6rem; align-items: baseline; gap: 1rem; padding: 0.85rem 0; border-bottom: 1px solid var(--line-dark); }
+.ledger__row:last-child { border-bottom: 0; }
+.ledger__date { color: var(--silver-deep); font-size: 0.82rem; white-space: nowrap; }
+.ledger__desc { color: var(--silver-bright); }
+.ledger__amt { text-align: right; font-weight: 500; color: var(--silver-bright); }
+/* Credits are struck brighter rather than coloured - the palette stays monochrome. */
+.ledger__amt.is-credit { color: var(--sheen); }
+.ledger__bal { text-align: right; color: var(--silver-deep); font-size: 0.85rem; }
+.ledger__empty { color: var(--silver-deep); padding: 1rem 0; }
+
+/* --- Dashboard/account extras --- */
+.acct--link { text-decoration: none; color: inherit; transition: border-color 0.15s, transform 0.15s; }
+.acct--link:hover { border-color: var(--silver-deep); transform: translateY(-2px); text-decoration: none; }
+.dash__foot { margin-top: 1.5rem; }
+.dash__headactions { display: flex; gap: 0.6rem; }
+.authcard--wide .form { max-width: 38rem; }
+
+/* --- select --- */
+select.field__input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--silver-deep) 50%), linear-gradient(135deg, var(--silver-deep) 50%, transparent 50%); background-position: calc(100% - 18px) center, calc(100% - 13px) center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 2rem; }
+
+/* --- preferences toggle --- */
+.prefs { list-style: none; margin: 1.25rem 0 0; padding: 0; }
+.prefs__row { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 0; border-bottom: 1px solid var(--line-dark); }
+.prefs__row:last-child { border-bottom: 0; }
+.toggle { width: 46px; height: 26px; border-radius: 999px; border: 1px solid var(--line-dark); background: var(--obsidian-2); position: relative; cursor: pointer; transition: background 0.15s; padding: 0; }
+.toggle--on { background: var(--silver-bright); border-color: var(--silver-bright); }
+.toggle__knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--silver-deep); transition: transform 0.15s, background 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.toggle--on .toggle__knob { transform: translateX(20px); background: var(--obsidian); }
+.toggle:focus-visible { outline: 2px solid var(--sheen); outline-offset: 2px; }
+
+/* --- Admin --- */
+.adminwrap { width: 100%; animation: rise 0.4s ease both; }
+.admin__title { font-family: var(--wordmark); font-weight: 400; font-size: 2.4rem; line-height: 1; margin: 0 0 1rem; color: var(--ink); -webkit-text-stroke: 0.5px var(--ink); }
+.admin__sub { font-family: var(--wordmark); font-weight: 400; font-size: 1.65rem; line-height: 1; margin: 2rem 0 0.75rem; color: var(--ink); -webkit-text-stroke: 0.4px var(--ink); }
+.adminnav { display: flex; gap: 0.35rem; border-bottom: 1px solid var(--line-light); margin-bottom: 1.5rem; }
+.adminnav a { padding: 0.6rem 0.9rem; color: var(--ink-muted); border-bottom: 2px solid transparent; font-size: 0.92rem; }
+.adminnav a:hover { text-decoration: none; color: var(--ink); }
+.adminnav a.active { color: var(--ink); border-bottom-color: var(--obsidian); font-weight: 600; }
+
+.table { overflow: hidden; }
+.table__head, .table__row { display: grid; gap: 1rem; align-items: center; padding: 0.85rem 1.25rem; }
+.table--users .table__head, .table--users .table__row { grid-template-columns: 1.6fr 0.8fr 2fr 1.2fr; }
+.table--audit .table__head, .table--audit .table__row { grid-template-columns: 1.3fr 1.6fr 1.3fr 0.7fr 1.6fr 0.9fr 0.8fr; }
+.table--fees .table__head, .table--fees .table__row { grid-template-columns: 1.4fr 1fr 1fr 1fr 0.9fr; }
+.table--roles .table__head, .table--roles .table__row { grid-template-columns: 1.2fr 3fr 0.8fr; }
+/* Rows whose middle column is a wrapping chip cloud read better top-aligned than centred. */
+.table--roles .table__row, .table--users .table__row { align-items: start; }
+.table__head { background: var(--obsidian); color: var(--silver-bright); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--silver-deep); }
+.table__row { border-top: 1px solid var(--line-dark); font-size: 0.9rem; color: var(--silver-bright); }
+.muted { color: var(--silver-deep); }
+
+.pill { display: inline-block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.2rem 0.5rem; border-radius: 999px; background: rgba(230,234,237,0.08); color: var(--silver-deep); border: 1px solid var(--line-dark); }
+.pill--active, .pill--success, .pill--active_ { background: var(--silver-bright); color: var(--obsidian); border-color: var(--silver-bright); }
+.pill--locked, .pill--failure { background: rgba(217,138,128,0.14); color: var(--alert); border-color: rgba(217,138,128,0.35); }
+.pill--closed { background: transparent; color: var(--silver-deep); }
+
+.rolechips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chip { font: 500 0.74rem var(--mono); padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid var(--line-dark); background: var(--obsidian-2); color: var(--silver-deep); cursor: pointer; }
+.chip--on { background: var(--silver-bright); color: var(--obsidian); border-color: var(--silver-bright); }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.chip--static { cursor: default; }
+/* Read-only role/permission presentation: plain text, not a pill button. */
+.chiptext { font-size: 0.85rem; color: var(--silver-bright); line-height: 1.5; }
+
+/* Icon action buttons in the admin tables. */
+.iconbtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.3rem; margin-right: 0.15rem;
+  border: 0; border-radius: 6px; background: transparent;
+  color: var(--silver-deep); cursor: pointer; transition: color 0.15s, background 0.15s;
+}
+.iconbtn:hover { color: var(--silver-bright); background: var(--obsidian-2); }
+.iconbtn--danger:hover { color: var(--alert); }
+.iconbtn:focus-visible { outline: 2px solid var(--sheen); outline-offset: 1px; }
+.rowactions { display: flex; gap: 0.75rem; }
+.danger { color: var(--alert); }
+
+/* The filter fills the row. Each field flexes so the extra width is actually taken up, not left as
+   a min-width floor that content ignores. The Download button keeps its natural size. */
+.inlineform { display: flex; align-items: flex-end; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.filterfield { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 12rem; }
+.filterfield__label {
+  font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--silver-deep);
+}
+.inlineform .field__input {
+  width: 100%;
+  font-size: 1.05rem;
+  padding: 0.95rem 1rem;
+  background: var(--obsidian-2); color: var(--silver-bright); border-color: var(--line-dark);
+}
+.inlineform .field__input::placeholder { color: var(--silver-deep); }
+/* Colour the native date internals for the dark field, and show the picker button. */
+.inlineform input[type="date"] { color-scheme: dark; }
+.inlineform input[type="date"]::-webkit-datetime-edit,
+.inlineform input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.inlineform input[type="date"]::-webkit-datetime-edit-text,
+.inlineform input[type="date"]::-webkit-datetime-edit-month-field,
+.inlineform input[type="date"]::-webkit-datetime-edit-day-field,
+.inlineform input[type="date"]::-webkit-datetime-edit-year-field { color: var(--silver-bright); }
+/* color-scheme: dark already renders this glyph light, so it only needs easing to a silver grey -
+   inverting it (as before) flipped the light glyph back to black. */
+.inlineform input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0.9); opacity: 0.8; cursor: pointer;
+}
+.inlineform input[type="date"]::-webkit-calendar-picker-indicator:hover { filter: brightness(1); opacity: 1; }
+.rolecards { display: flex; flex-direction: column; gap: 1rem; }
+.rolecard { padding: 1.1rem 1.25rem; }
+.rolecard__head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.85rem; }
+.rolecard__head p { margin: 0.15rem 0 0; font-size: 0.85rem; color: var(--silver-deep); }
+/* This row sits on the light canvas, not an obsidian panel, so it takes the ink tokens. */
+/* Account type and number as matching label:value rows - same size, same label treatment, so the
+   two read as one small spec block above the balance. */
+.acctmeta { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.35rem; font-size: 0.95rem; color: var(--ink); }
+.acctmeta__label { color: var(--ink-muted); min-width: 8.5rem; }
+.acctmeta .mono { letter-spacing: 0.04em; cursor: help; }
+/* A square icon button - the copy affordance is the glyph, not a word. Muted until hovered so it
+   doesn't compete with the number it sits beside. */
+.iconbtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.85rem; height: 1.85rem; padding: 0;
+  background: transparent; border: 1px solid var(--line-light); border-radius: 6px;
+  color: var(--ink-muted); cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.iconbtn:hover { color: var(--ink); border-color: var(--ink-muted); }
+.iconbtn:focus-visible { outline: 2px solid var(--ink-muted); outline-offset: 1px; }
+/* Link-flavoured icon buttons (e.g. Send, which is an anchor) shed the underline. */
+.iconbtn, .iconbtn:hover { text-decoration: none; }
+/* Remove is destructive, so its icon warms to the alert colour on hover. */
+.iconbtn--danger:hover { color: var(--alert); border-color: var(--alert); }
+
+/* Numbered pagination: arrow buttons, page-number buttons, ellipsis gaps. */
+.pager { display: flex; align-items: center; justify-content: center; gap: 0.3rem; margin-top: 1.25rem; }
+.pager__num, .pager__nav {
+  min-width: 2.1rem; height: 2.1rem; padding: 0 0.5rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; color: var(--ink-muted);
+  border: 1px solid var(--line-light); border-radius: 6px;
+  font: 500 0.9rem var(--body); cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pager__num:hover, .pager__nav:hover:not(:disabled) { color: var(--ink); border-color: var(--ink-muted); }
+.pager__num--active {
+  background: var(--silver-bright); color: var(--obsidian); border-color: var(--silver-bright);
+  font-weight: 600; cursor: default;
+}
+.pager__nav:disabled { opacity: 0.4; cursor: not-allowed; }
+.pager__gap { min-width: 1.5rem; text-align: center; color: var(--ink-muted); }
+
+/* --- Page scaffold: heading on the surface, panels beneath --- */
+/* Full width, matching the transaction history. The intro copy keeps its own bounded measure via
+   .page__sub so prose stays readable while the table below spans the surface. */
+.page { width: 100%; animation: rise 0.45s ease both; }
+.page__head { margin-bottom: 1.75rem; }
+.page__title { font-family: var(--wordmark); font-weight: 400; font-size: clamp(2.1rem, 4.4vw, 2.8rem); line-height: 1; margin: 0 0 0.5rem; letter-spacing: 0.01em; color: var(--ink); -webkit-text-stroke: 0.5px var(--ink); }
+.page__sub { margin: 0; max-width: 44rem; color: var(--ink-muted); font-size: 0.95rem; line-height: 1.6; }
+
+/* List on the left, the form it feeds on the right. Collapses to one column when narrow. */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 26rem; gap: 1.5rem; align-items: start; }
+@media (max-width: 940px) { .split { grid-template-columns: 1fr; } }
+.split__aside { width: 100%; }
+
+/* A titled bar for panels that aren't column tables. */
+.table__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.9rem 1.5rem;
+  background: var(--obsidian-2); color: var(--silver-bright);
+  border-bottom: 1px solid var(--silver-deep);
+}
+.table__bar .btn { width: auto; flex: none; }
+.table__bar h2 { font-family: var(--wordmark); font-weight: 400; font-size: 1.65rem; line-height: 1; margin: 0; -webkit-text-stroke: 0.4px currentColor; }
+.table__empty { color: var(--silver-deep); padding: 1.5rem; margin: 0; }
+
+.payees { list-style: none; margin: 0; padding: 0 1.5rem; }
+.payee {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.95rem 0; border-bottom: 1px solid var(--line-dark);
+}
+.payee:last-child { border-bottom: 0; }
+.payee__name { display: block; font-weight: 500; color: var(--silver-bright); }
+/* The legal name sits under the nickname so the row still shows who is actually being paid. */
+.payee__legal { display: block; font-size: 0.82rem; color: var(--silver-deep); margin-top: 0.1rem; }
+.payee__num { display: block; font-size: 0.82rem; color: var(--silver-deep); margin-top: 0.25rem; }
+.payee .rowactions { flex: none; font-size: 0.88rem; }

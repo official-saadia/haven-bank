@@ -1,0 +1,71 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Architecture" id="haven-arch">
+    <mxGraphModel dx="1200" dy="820" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1150" pageHeight="880" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="backend" value="Backend (Spring Boot)" style="rounded=1;absoluteArcSize=1;arcSize=16;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#FFFFFF;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="60" width="420" height="560" as="geometry" />
+        </mxCell>
+
+        <mxCell id="authsrv" value="Authorization Server&#10;Spring Authorization Server&#10;OAuth 2.1 / OIDC / JWT" style="rounded=1;absoluteArcSize=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FFFFFF;fontColor=#111111;fontSize=13;" vertex="1" parent="backend">
+          <mxGeometry x="40" y="70" width="340" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="restapi" value="REST API&#10;accounts, transfers, history" style="rounded=1;absoluteArcSize=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FFFFFF;fontColor=#111111;fontSize=13;" vertex="1" parent="backend">
+          <mxGeometry x="40" y="230" width="340" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="notif" value="Notifications&#10;event-driven, channel-agnostic" style="rounded=1;absoluteArcSize=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FFFFFF;fontColor=#111111;fontSize=13;" vertex="1" parent="backend">
+          <mxGeometry x="40" y="390" width="340" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Browser / React SPA&#10;(client)" style="rounded=1;absoluteArcSize=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;fontColor=#111111;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="10" y="270" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pg" value="Postgres" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=14;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#6E6E6E;fontColor=#111111;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="700" width="120" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="redis" value="Redis&#10;cache, rate limits,&#10;OTP, token denylist" style="rounded=1;absoluteArcSize=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#6E6E6E;fontColor=#111111;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="590" y="715" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="email" value="Email Provider&#10;external" style="rounded=1;absoluteArcSize=1;arcSize=14;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FFFFFF;strokeColor=#9E9E9E;fontColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="880" y="450" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="login (OAuth 2.1 / OIDC + PKCE)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;labelBackgroundColor=none;strokeColor=#999999;fontColor=#999999;fontSize=11;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="browser" target="authsrv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" value="API calls (JWT bearer)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;labelBackgroundColor=none;strokeColor=#999999;fontColor=#999999;fontSize=11;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="browser" target="restapi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e3" value="validate token (JWKS)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;labelBackgroundColor=none;strokeColor=#999999;fontColor=#999999;fontSize=11;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="restapi" target="authsrv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" value="emit events" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;labelBackgroundColor=none;strokeColor=#999999;fontColor=#999999;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="restapi" target="notif">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" value="send email" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;labelBackgroundColor=none;strokeColor=#999999;fontColor=#999999;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="notif" target="email">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e6" value="users, accounts, ledger, audit" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;labelBackgroundColor=none;strokeColor=#999999;fontColor=#999999;fontSize=11;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="backend" target="pg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e7" value="OTP, rate limits, denylist" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;labelBackgroundColor=none;strokeColor=#999999;fontColor=#999999;fontSize=11;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="backend" target="redis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

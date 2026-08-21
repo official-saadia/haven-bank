@@ -1,0 +1,52 @@
+# Test overrides. The mail credentials are dummies: SmtpEmailSender validates that the properties
+# are present at startup but does not connect, so a context test can boot without a real mailbox.
+spring:
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: ${app.issuer}
+        client:
+          spa:
+            require-proof-key: true
+            require-authorization-consent: false
+            registration:
+              client-id: spa
+              client-authentication-methods:
+                - none
+              authorization-grant-types:
+                - authorization_code
+                - refresh_token
+              redirect-uris:
+                - ${app.spa.redirect-uri}
+              post-logout-redirect-uris:
+                - ${app.spa.post-logout-uri}
+              scopes:
+                - openid
+                - profile
+                - accounts.read
+                - transfers.write
+            token:
+              access-token-time-to-live: 5m
+              refresh-token-time-to-live: 7d
+              reuse-refresh-tokens: false
+  mail:
+    host: localhost
+    port: 3025
+    username: test
+    password: test
+
+app:
+  # Declared explicitly for the test context: the production @Value bindings no longer carry
+  # inline defaults, so the values must come from config in every environment, tests included.
+  issuer: http://localhost:8080
+  resource-id: banking-api
+  spa:
+    redirect-uri: http://localhost:5173/oauth/callback
+    post-logout-uri: http://localhost:5173/?signedout
+  verification:
+    base-url: http://localhost:5173
+    email-token-ttl: PT24H
+    password-reset-token-ttl: PT1H
+  notification:
+    email:
+      from: no-reply@havenbank.test

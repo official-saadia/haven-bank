@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: banking
+      POSTGRES_USER: banking
+      POSTGRES_PASSWORD: banking
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U banking -d banking"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/banking
+      DB_USER: banking
+      DB_PASSWORD: banking
+      REDIS_HOST: redis
+      APP_ISSUER: http://localhost:8080
+      APP_BASE_URL: http://localhost:8080
+      # Override for anything beyond local development.
+      APP_CRYPTO_KEY: change-me-dev-only-secret
+      # Required: the app will not start without these.
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:?set MAIL_USERNAME (your Gmail address)}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:?set MAIL_PASSWORD (a Gmail App Password)}
+      MAIL_FROM: ${MAIL_FROM:?set MAIL_FROM (envelope sender address)}
+    ports: ["8080:8080"]
+
+volumes:
+  pgdata:

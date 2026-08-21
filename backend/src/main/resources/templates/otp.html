@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Enter code - Haven Bank</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/auth.css}" href="/css/auth.css"/>
+</head>
+<body>
+<p class="mark">Haven Bank</p>
+<div class="authcard authcard--otp">
+    <h1 class="authcard__title">Enter your code</h1>
+    <p class="lede">We emailed a 6-digit code. It expires in 5 minutes.</p>
+    <form class="form" th:action="@{/login/otp}" method="post">
+        <input class="field__input field__input--otp" type="text" name="code" inputmode="numeric"
+               pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required autofocus
+               aria-label="Six-digit code"/>
+        <p class="notice notice--error" th:if="${param.error}">Incorrect or expired code.</p>
+        <button class="btn btn--primary" type="submit">Verify</button>
+    </form>
+</div>
+</body>
+</html>
