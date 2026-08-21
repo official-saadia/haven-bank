@@ -87,7 +87,7 @@ It is a **client–server** application — a **React single-page app** talking 
 
 A two-tier **client–server** design. The **client** is a React SPA. The **server** is a Spring Boot backend that both issues identity (the authorization server) and serves the banking REST API, with PostgreSQL and Redis behind it and email leaving through a dedicated notification component.
 
-![Haven Bank architecture](docs/architecture.svg)
+![Haven Bank architecture](./docs/architecture.svg)
 
 ### Sign-in flow
 
@@ -102,7 +102,7 @@ A two-tier **client–server** design. The **client** is a React SPA. The **serv
 
 The PostgreSQL schema below is in four groups — **identity & access**, **money**, **notifications**, and **audit**. Ephemeral security state (OTP codes, email-verification and password-reset tokens, rate-limit and lockout counters, the access-token denylist) lives in **Redis with TTLs** and is not part of the relational model.
 
-![Haven Bank entity relationship diagram](docs/erd.svg)
+![Haven Bank entity relationship diagram](./docs/erd.svg)
 
 A few deliberate details: **`ACCOUNT.user_id` is nullable** — internal accounts (e.g. the bank's fee-income account) have no owner, which is how fees post cleanly inside the double-entry model. **`AUDIT_TRAIL` is append-only.** **`FEE_SCHEDULE` and `POLICY` are versioned** (effective-dated rows, never updated in place), so past postings stay reproducible; `POLICY` intentionally has no foreign keys — it's read by the application.
 
