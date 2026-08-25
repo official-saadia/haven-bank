@@ -3,6 +3,8 @@ package com.havenbank.backend.notification.controller;
 import com.havenbank.backend.notification.domain.Status;
 import com.havenbank.backend.notification.dto.NotificationView;
 import com.havenbank.backend.notification.service.NotificationAdminService;
+import com.havenbank.backend.shared.ratelimit.RateLimitTier;
+import com.havenbank.backend.shared.ratelimit.RateLimited;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ class NotificationAdminController {
 
     @Operation(summary = "List notifications by status", description = "Defaults to the dead-letter queue.")
     @GetMapping
+    @RateLimited(RateLimitTier.STANDARD)
     public Page<NotificationView> list(@RequestParam(defaultValue = "DEAD_LETTER") Status status,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "50") int size) {
@@ -38,6 +41,7 @@ class NotificationAdminController {
 
     @Operation(summary = "Requeue a notification", description = "Returns a dead-lettered notification to the retry queue.")
     @PostMapping("/{id}/retry")
+    @RateLimited(RateLimitTier.STANDARD)
     public NotificationView retry(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
         return notificationAdmin.requeue(id, UUID.fromString(jwt.getSubject()));
     }

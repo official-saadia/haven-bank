@@ -270,12 +270,74 @@ required — they run without Postgres or Redis.
 **Domain**
 - `RegistrationServiceTest` — only a hash is stored, accounts start inactive, and registering an already-taken email is silently indistinguishable from success.
 - `PasswordServiceTest` — a change requires the current password, a reset token is single-use, and a forgotten-password request for an unknown address behaves identically to a known one.
+- `MoneyMovementServiceTest` — the double-entry engine, isolated per rule: a replayed idempotency key touches nothing; ownership is IDOR-safe; a third-party transfer's "wrong name" and "no such account" throw the identical exception (FR-2.3/FR-3.4); the daily limit and step-up thresholds each block correctly at their boundary; a fee posts as its own ledger entries against `FEE_INCOME`.
 - `FeeServiceTest` · `PolicyServiceTest` — fees and thresholds come from effective-dated rows, in fixed-precision decimal.
 - `PreferenceGateTest` — security-critical notifications cannot be suppressed; convenience ones honour the user's choice.
+- `EmailNotificationServiceTest` — a failed **secret-bearing** notification (OTP, verification/reset link) is recorded without ever persisting the rendered subject/body (FR-5.3/FR-1.8b); a failed **retryable** one is enqueued with its content for the retry worker.
+- `AccountServiceTest` — a concurrent double-submit race on account-open reads back the winner's account instead of failing; another customer's account is `404`, not `403` (FR-2.3).
+- `BeneficiaryServiceTest` — saving a payee never checks the account number exists (FR-2.3's enumeration-safety, asserted directly); ownership scoping on update/delete.
+- `TransactionQueryServiceTest` — a statement row's DEBIT/CREDIT direction is derived per-row from whether the requested account was that transaction's source or destination, not a fixed property.
+- `UserAdminServiceTest` — an admin cannot change their own roles; CUSTOMER cannot be combined with STAFF/ADMIN; a closed account's roles cannot be changed.
+- `RoleAdminServiceTest` — a system role (CUSTOMER/STAFF/ADMIN) cannot be deleted or re-permissioned regardless of who is asking, even if unassigned.
+- `FeeAdminServiceTest` · `PolicyAdminServiceTest` — creating a new version closes whichever row was previously open for that key, so `FeeService`/`PolicyService` never sees two simultaneously-effective rows.
+- `DefaultAuditServiceTest` — the request thread reads live correlation-id/IP/user-agent thread-locals; an `@Async` caller's explicitly-supplied context is used instead of that thread's own (empty) ones.
+- `ReuseDetectingAuthorizationServiceTest` — rotation carries the family id forward; replaying a consumed refresh token revokes every authorization for the principal; an access-token lookup never triggers reuse detection.
 
-**Not yet written:** the end-to-end integration tests — cross-customer access returning `404`,
-idempotency replay, and concurrent-transfer correctness — which need Testcontainers to run against a
-real Postgres and Redis.
+**Deliberately not unit-tested in isolation:** `LoginController`/`OtpController`/`MfaAuthenticationSuccessHandler` - covered end to end by `LoginFlowIntegrationTest` instead, since isolating them would mean re-mocking `HttpSession`/`SecurityContext` machinery for limited marginal value over the real flow.
+
+---
+
+### Integration tests
+
+```bash
+cd backend && ./mvnw verify
+```
+
+Requires Docker running locally. These exercise the real application against real Postgres and
+Redis via Testcontainers (NFR-6.2), through the actual `SecurityFilterChain` - JWT validation, rate
+limiting, and persistence all for real, not mocked. Kept separate from `mvn test` (Surefire excludes
+them; Failsafe runs them on `verify`) so the fast unit suite still runs without Docker.
+
+- `RegistrationIntegrationTest` — a new email is accepted; an already-registered email gets the
+  identical response and leaves the existing account untouched (FR-1.7).
+- `LoginFlowIntegrationTest` — the real Authorization Code + PKCE flow end to end: password step
+  hands off to OTP rather than completing sign-in, a wrong OTP code leaves the session
+  unauthenticated, and the resulting token from a correct one is accepted by a real protected
+  endpoint.
+- `PasswordFlowIntegrationTest` — forgot-password gives an identical response for a known and an
+  unknown email (FR-1.7); a reset token changes the password and cannot be reused (FR-1.11);
+  changing a password requires the current one.
+- `AccountIntegrationTest` — Alice cannot read Bob's account by id (`404`, not `403` — FR-2.3);
+  replaying an idempotency key on account-open returns the original account, not a second one.
+- `MoneyMovementIntegrationTest` — a replayed deposit idempotency key is rejected and does not
+  double-credit; **fifteen concurrent deposits against the same account, fired from real threads
+  through the real embedded server, lose no updates** — the actual proof that
+  `AccountRepository.findByIdForUpdate`'s pessimistic lock serialises real concurrent load (FR-3.8),
+  not just that the annotation is present.
+- `ConcurrentTransferIntegrationTest` — the specific pattern that risks deadlock, not just a lost
+  update: Alice→Bob and Bob→Alice transferring at the same instant, which lock in opposite order.
+  Whichever side Postgres lets through, both balances end up exactly correct.
+- `BeneficiaryIntegrationTest` — a saved payee is scoped to its owner (Alice cannot update or delete
+  Bob's); saving one never requires the account number to already exist (deliberate — see
+  `BeneficiaryRequest`'s javadoc on avoiding an enumeration oracle).
+- `NotificationPreferenceIntegrationTest` — a disabled preference persists across a fresh read;
+  security-critical types never appear in the list and cannot be disabled by request (FR-7.1b).
+- `AuditQueryIntegrationTest` — access is gated on the `AUDIT_READ` permission, not a role name; an
+  unauthenticated request is rejected before any permission check runs.
+- `AdminAccessIntegrationTest` — every `hasRole('ADMIN')` controller (roles, users, fee policies,
+  notification admin) actually rejects a CUSTOMER token and accepts an ADMIN one.
+- `MiscEndpointsIntegrationTest` — profile, logout, step-up OTP challenge/verify, and transaction
+  history/statement export: authentication and ownership gating on each.
+- `RefreshTokenReuseIntegrationTest` — a rotated refresh token works once; reusing the consumed
+  original is rejected, and per the max-safety policy in `ReuseDetectingAuthorizationService`, this
+  revokes the **entire** token family - the legitimately-rotated, never-yet-used replacement token
+  from the same session must also stop working (FR-1.10).
+- `DailyTransferLimitIntegrationTest` — the limit is enforced cumulatively across a customer's
+  outbound transfers, not per-transaction: two transfers that individually fit still combine to
+  breach it, and rejecting the one that pushes over the line leaves the earlier, already-posted
+  transfers untouched (FR-3.11).
+- `RateLimitIntegrationTest` — the 6th request to a CRITICAL endpoint within a minute gets a real
+  `429` with a real `Retry-After` header, computed from a real Redis TTL.
 
 ---
 

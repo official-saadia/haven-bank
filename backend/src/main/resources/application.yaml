@@ -95,9 +95,9 @@ app:
   # runtime, never committed - set ADMIN_BOOTSTRAP_* in your environment to use it.
   bootstrap:
     admin:
-      enabled: ${ADMIN_BOOTSTRAP_ENABLED:true}
-      email: ${ADMIN_BOOTSTRAP_EMAIL:saadiakhan65@gmail.com}
-      password: ${ADMIN_BOOTSTRAP_PASSWORD:saadiakhan@12345}
+      enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
+      email: ${ADMIN_BOOTSTRAP_EMAIL:}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:}
       full-name: ${ADMIN_BOOTSTRAP_NAME:Administrator}
   ratelimit:
     enabled: ${RATE_LIMIT_ENABLED:true}
