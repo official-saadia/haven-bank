@@ -1,7 +1,7 @@
 package com.havenbank.backend.authserver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.havenbank.backend.iam.domain.Role;
 import com.havenbank.backend.iam.domain.User;
 import com.havenbank.backend.iam.repository.RoleRepository;
@@ -35,7 +35,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class RefreshTokenReuseIntegrationTest extends AbstractIntegrationTest {
 
-    private static final String CLIENT_ID = "spa";
+    // FR-1.10 (rotation + reuse detection) is only meaningful against a client that can actually
+    // receive a refresh token. Spring Authorization Server never issues one to a client registered
+    // with client-authentication-methods: none (the "spa" client), so this test authenticates as
+    // the test-only confidential client instead - see src/test/resources/application.yaml.
+    private static final String CLIENT_ID = "test-confidential";
+    private static final String CLIENT_SECRET = "test-confidential-secret";
     private static final String REDIRECT_URI = "http://localhost:5173/oauth/callback";
     private static final String PASSWORD = "a-genuinely-long-passphrase";
 
@@ -102,9 +107,10 @@ class RefreshTokenReuseIntegrationTest extends AbstractIntegrationTest {
 
     private org.springframework.test.web.servlet.ResultActions refresh(String refreshToken) throws Exception {
         return mvc.perform(post("/oauth2/token")
+                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+                        .httpBasic(CLIENT_ID, CLIENT_SECRET))
                 .param("grant_type", "refresh_token")
-                .param("refresh_token", refreshToken)
-                .param("client_id", CLIENT_ID));
+                .param("refresh_token", refreshToken));
     }
 
     /**
@@ -117,13 +123,19 @@ class RefreshTokenReuseIntegrationTest extends AbstractIntegrationTest {
         String codeVerifier = randomVerifier();
         String codeChallenge = s256(codeVerifier);
 
-        mvc.perform(get("/oauth2/authorize").session(session)
-                .accept(org.springframework.http.MediaType.TEXT_HTML)
-                .param("response_type", "code").param("client_id", CLIENT_ID)
-                .param("redirect_uri", REDIRECT_URI)
-                .param("scope", "openid profile accounts.read transfers.write")
-                .param("state", UUID.randomUUID().toString())
-                .param("code_challenge", codeChallenge).param("code_challenge_method", "S256"));
+        URI authorizeUri = org.springframework.web.util.UriComponentsBuilder.fromPath("/oauth2/authorize")
+                .queryParam("response_type", "code")
+                .queryParam("client_id", CLIENT_ID)
+                .queryParam("redirect_uri", REDIRECT_URI)
+                .queryParam("scope", "openid profile accounts.read transfers.write")
+                .queryParam("state", UUID.randomUUID().toString())
+                .queryParam("code_challenge", codeChallenge)
+                .queryParam("code_challenge_method", "S256")
+                .build()
+                .toUri();
+        mvc.perform(get(authorizeUri).session(session)
+                        .accept(org.springframework.http.MediaType.TEXT_HTML))
+                .andExpect(status().is3xxRedirection());
 
         mvc.perform(post("/login").session(session).with(csrf())
                 .param("username", email).param("password", PASSWORD));
@@ -141,10 +153,11 @@ class RefreshTokenReuseIntegrationTest extends AbstractIntegrationTest {
         String authorizationCode = extractQueryParam(callbackUrl, "code");
 
         MvcResult tokenResponse = mvc.perform(post("/oauth2/token")
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+                                .httpBasic(CLIENT_ID, CLIENT_SECRET))
                         .param("grant_type", "authorization_code")
                         .param("code", authorizationCode)
                         .param("redirect_uri", REDIRECT_URI)
-                        .param("client_id", CLIENT_ID)
                         .param("code_verifier", codeVerifier))
                 .andExpect(status().isOk())
                 .andReturn();

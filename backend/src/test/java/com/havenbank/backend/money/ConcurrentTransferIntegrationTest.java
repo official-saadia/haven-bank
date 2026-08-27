@@ -1,6 +1,6 @@
-package com.havenbank.backend.money.service;
+package com.havenbank.backend.money;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.havenbank.backend.iam.domain.Role;
 import com.havenbank.backend.iam.domain.User;
 import com.havenbank.backend.iam.repository.RoleRepository;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.test.web.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MvcResult;
@@ -157,16 +157,19 @@ class ConcurrentTransferIntegrationTest extends AbstractIntegrationTest {
             throws Exception {
 
         // ✅ Use RestTestClient's fluent API (Spring Boot 4 style)
-        var response = restTestClient.post()
+        // returnResult(...) (not expectStatus()) deliberately avoids asserting here - a deadlock
+        // loser throwing/getting a non-2xx is an acceptable outcome, checked by the caller.
+        var result = restTestClient.post()
                 .uri("/api/v1/transfers")
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .header("Authorization", "Bearer " + testJwt(from))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{\"sourceAccountId\":\"" + fromAccountId + "\",\"destinationAccountId\":\""
                         + toAccountId + "\",\"amount\":" + amount + "}")
-                .exchange();
+                .exchange()
+                .returnResult(String.class);
 
-        return response.getStatus().is2xxSuccessful();
+        return result.getStatus().is2xxSuccessful();
     }
 
     private User save(String name, Role role) {

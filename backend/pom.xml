@@ -166,19 +166,32 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-restclient</artifactId>
+            <artifactId>spring-boot-starter-restclient</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- For JSON support -->
+        <!-- For JSON test-slice support (@AutoConfigureJson, tools.jackson ObjectMapper autoconfig) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-json</artifactId>
+            <artifactId>spring-boot-starter-jackson-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
         <plugins>
+            <!-- Resolves ${org.mockito:mockito-core:jar} below to mockito-core's actual jar path,
+                 for the explicit -javaagent argLine on Surefire/Failsafe. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -189,6 +202,12 @@
                     <excludes>
                         <exclude>**/*IntegrationTest.java</exclude>
                     </excludes>
+                    <!-- JDK 21+ restricts dynamic agent self-attach, which is how Mockito's inline
+                         mock maker normally installs itself; on newer JDKs (we're on 25) that can
+                         silently produce mocks whose stubbed methods fall through to the real
+                         method body instead of being intercepted. Loading it as a proper build-time
+                         agent avoids self-attach entirely. -->
+                    <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -206,6 +225,7 @@
                     <includes>
                         <include>**/*IntegrationTest.java</include>
                     </includes>
+                    <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                 </configuration>
             </plugin>
             <plugin>

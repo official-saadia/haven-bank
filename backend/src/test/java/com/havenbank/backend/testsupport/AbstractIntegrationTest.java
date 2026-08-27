@@ -21,7 +21,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import com.redis.testcontainers.RedisContainer;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +51,19 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.data.redis.host", REDIS::getHost);
         registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
+
+        // RANDOM_PORT normally binds the embedded server to an OS-assigned port (server.port=0),
+        // which is fine when nothing needs to know the port in advance. But this app's resource
+        // server validates its own tokens by making a real HTTP call back to itself for the JWKS
+        // (jwk-set-uri: ${APP_ISSUER}/oauth2/jwks - see application.yaml), and app.issuer defaults
+        // to localhost:8080. Under RANDOM_PORT that JWKS fetch goes to the wrong port and every
+        // single bearer-token validation fails with "Connection refused" - not just some tokens,
+        // all of them, since the resource server can't fetch keys to check ANY signature. Picking
+        // the free port ourselves (rather than letting the server pick one at bind time) lets us
+        // set server.port and app.issuer to the same, correct value before the context starts.
+        int port = org.springframework.test.util.TestSocketUtils.findAvailableTcpPort();
+        registry.add("server.port", () -> port);
+        registry.add("app.issuer", () -> "http://localhost:" + port);
     }
 
     @Autowired
@@ -86,7 +98,8 @@ public abstract class AbstractIntegrationTest {
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(300))
                 .build();
-        return SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt).authorities((Collection<GrantedAuthority>) jwtAuthenticationConverter);
+        return SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)
+                .authorities(jwtAuthenticationConverter.convert(jwt).getAuthorities());
     }
 
     protected RequestPostProcessor asCustomer(UUID userId, String email) {

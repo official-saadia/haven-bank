@@ -5,7 +5,7 @@ import com.havenbank.backend.iam.domain.User;
 import com.havenbank.backend.iam.repository.RoleRepository;
 import com.havenbank.backend.iam.repository.UserRepository;
 import com.havenbank.backend.testsupport.AbstractIntegrationTest;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

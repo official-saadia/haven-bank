@@ -1,7 +1,7 @@
 package com.havenbank.backend.authserver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.havenbank.backend.iam.domain.Role;
 import com.havenbank.backend.iam.domain.User;
 import com.havenbank.backend.iam.repository.RoleRepository;
@@ -82,16 +82,23 @@ class LoginFlowIntegrationTest extends AbstractIntegrationTest {
 
         // Step 1: unauthenticated authorization request -> redirected to /login, and the request
         // itself is cached (WebSecurityConfig's shared RequestCache) to be resumed after OTP.
-        MvcResult authorizeAttempt = mvc.perform(get("/oauth2/authorize")
+        // NB: built as a single URI with the query string baked in, not via .param(...) - for a
+        // GET request MockMvc's .param() only populates the servlet parameter map, not
+        // request.getQueryString(), which is what Spring Authorization Server's authorization
+        // request converter actually reads. With .param() alone every param looks missing to it.
+        URI authorizeUri = org.springframework.web.util.UriComponentsBuilder.fromPath("/oauth2/authorize")
+                .queryParam("response_type", "code")
+                .queryParam("client_id", CLIENT_ID)
+                .queryParam("redirect_uri", REDIRECT_URI)
+                .queryParam("scope", "openid profile accounts.read transfers.write")
+                .queryParam("state", state)
+                .queryParam("code_challenge", codeChallenge)
+                .queryParam("code_challenge_method", "S256")
+                .build()
+                .toUri();
+        MvcResult authorizeAttempt = mvc.perform(get(authorizeUri)
                         .session(session)
-                        .accept(org.springframework.http.MediaType.TEXT_HTML)
-                        .param("response_type", "code")
-                        .param("client_id", CLIENT_ID)
-                        .param("redirect_uri", REDIRECT_URI)
-                        .param("scope", "openid profile accounts.read transfers.write")
-                        .param("state", state)
-                        .param("code_challenge", codeChallenge)
-                        .param("code_challenge_method", "S256"))
+                        .accept(org.springframework.http.MediaType.TEXT_HTML))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
         assertThat(authorizeAttempt.getResponse().getRedirectedUrl()).contains("/login");
@@ -158,13 +165,18 @@ class LoginFlowIntegrationTest extends AbstractIntegrationTest {
         String codeVerifier = randomVerifier();
         String codeChallenge = s256(codeVerifier);
 
-        mvc.perform(get("/oauth2/authorize").session(session)
-                        .accept(org.springframework.http.MediaType.TEXT_HTML)
-                        .param("response_type", "code").param("client_id", CLIENT_ID)
-                        .param("redirect_uri", REDIRECT_URI)
-                        .param("scope", "openid accounts.read")
-                        .param("state", UUID.randomUUID().toString())
-                        .param("code_challenge", codeChallenge).param("code_challenge_method", "S256"));
+        URI authorizeUri = org.springframework.web.util.UriComponentsBuilder.fromPath("/oauth2/authorize")
+                .queryParam("response_type", "code")
+                .queryParam("client_id", CLIENT_ID)
+                .queryParam("redirect_uri", REDIRECT_URI)
+                .queryParam("scope", "openid accounts.read")
+                .queryParam("state", UUID.randomUUID().toString())
+                .queryParam("code_challenge", codeChallenge)
+                .queryParam("code_challenge_method", "S256")
+                .build()
+                .toUri();
+        mvc.perform(get(authorizeUri).session(session)
+                .accept(org.springframework.http.MediaType.TEXT_HTML));
 
         mvc.perform(post("/login").session(session).with(csrf())
                 .param("username", email).param("password", PASSWORD));

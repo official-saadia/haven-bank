@@ -1,4 +1,4 @@
-package com.havenbank.backend.money.service;
+package com.havenbank.backend.money;
 
 import com.havenbank.backend.iam.domain.Role;
 import com.havenbank.backend.iam.domain.User;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.resttestclient.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MvcResult;
@@ -119,15 +119,22 @@ class MoneyMovementIntegrationTest extends AbstractIntegrationTest {
                     startingGun.await();
 
                     // ✅ Use RestTestClient fluent API (Spring Boot 4 style)
-                    var response = restTestClient.post()
+                    // exchange() returns ResponseSpec, which has no getStatus() of its own -
+                    // returnResult(...) exits the assertion chain and gives back an
+                    // EntityExchangeResult, which does. Using this (rather than
+                    // expectStatus().is2xxSuccessful()) deliberately avoids asserting here: a
+                    // losing thread under concurrent load getting a non-2xx is an expected,
+                    // non-fatal outcome, not a test failure.
+                    var result = restTestClient.post()
                             .uri("/api/v1/accounts/{id}/deposit", accountId)
                             .header("Idempotency-Key", UUID.randomUUID().toString())
                             .header("Authorization", "Bearer " + token)
                             .contentType(MediaType.APPLICATION_JSON)
                             .body("{\"amount\": " + amountEach + "}")
-                            .exchange();
+                            .exchange()
+                            .returnResult(String.class);
 
-                    if (response.getStatus().is2xxSuccessful()) {
+                    if (result.getStatus().is2xxSuccessful()) {
                         successes.incrementAndGet();
                     }
                 } catch (Exception ignored) {

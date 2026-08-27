@@ -9,7 +9,7 @@ import com.havenbank.backend.money.domain.PolicyKey;
 import com.havenbank.backend.money.repository.LedgerEntryRepository;
 import com.havenbank.backend.money.repository.PolicyRepository;
 import com.havenbank.backend.testsupport.AbstractIntegrationTest;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

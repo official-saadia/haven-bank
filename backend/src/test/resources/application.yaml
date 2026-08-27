@@ -29,6 +29,35 @@ spring:
               access-token-time-to-live: 5m
               refresh-token-time-to-live: 7d
               reuse-refresh-tokens: false
+          # Test-only confidential client for FR-1.10 (refresh token rotation + reuse detection).
+          # Spring Authorization Server deliberately never issues a refresh token to a client
+          # registered with client-authentication-methods: none (the "spa" client above) -
+          # refresh-token rotation is meaningless to test against a client that structurally never
+          # receives one. This client can hold a secret (client_secret_basic), so it exercises the
+          # real rotation/reuse-detection code path. Test-only: not present in main application.yaml,
+          # never registered in any non-test environment.
+          test-confidential:
+            require-proof-key: true
+            require-authorization-consent: false
+            registration:
+              client-id: test-confidential
+              client-secret: "{noop}test-confidential-secret"
+              client-authentication-methods:
+                - client_secret_basic
+              authorization-grant-types:
+                - authorization_code
+                - refresh_token
+              redirect-uris:
+                - ${app.spa.redirect-uri}
+              scopes:
+                - openid
+                - profile
+                - accounts.read
+                - transfers.write
+            token:
+              access-token-time-to-live: 5m
+              refresh-token-time-to-live: 7d
+              reuse-refresh-tokens: false
   mail:
     host: localhost
     port: 3025
@@ -50,3 +79,26 @@ app:
   notification:
     email:
       from: no-reply@havenbank.test
+  ratelimit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    # Thresholds are configuration, not code (FR-6.6): during a credential-stuffing incident these
+    # can be tightened and the service restarted, without waiting for a build.
+    tiers:
+      critical: # credential submission - guessable, so keyed by IP
+        limit: ${RL_CRITICAL_LIMIT:25}
+        window: PT1M
+        key: ip
+        backoff: true
+        fail-closed: true             # no rate limiting means no brute-force protection
+      sensitive: # authenticated writes: money movement, token exchange
+        limit: ${RL_SENSITIVE_LIMIT:20}
+        window: PT1M
+        key: subject
+        backoff: false
+        fail-closed: true
+      standard: # reads, and the pages that render credential forms
+        limit: ${RL_STANDARD_LIMIT:100}
+        window: PT1M
+        key: subject
+        backoff: false
+        fail-closed: false

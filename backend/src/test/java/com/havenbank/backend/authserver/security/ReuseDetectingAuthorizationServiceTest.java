@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
@@ -80,7 +79,7 @@ class ReuseDetectingAuthorizationServiceTest {
         assertThat(args.getValue()[2]).isEqualTo("auth-1");
         assertThat(args.getValue()[3]).isEqualTo("alice");
         // No prior family existed (stubbed empty above), so nothing gets marked consumed.
-        verify(jdbc, never()).update(eq(CONSUME_SQL), any());
+        verify(jdbc, never()).update(eq(CONSUME_SQL), (Object[])any());
     }
 
     @Test
@@ -104,8 +103,8 @@ class ReuseDetectingAuthorizationServiceTest {
 
         service.save(authorizationWithRefreshToken("auth-1", "alice", "rt-1"));
 
-        verify(jdbc, never()).update(eq(INSERT_SQL), any());
-        verify(jdbc, never()).update(eq(CONSUME_SQL), any());
+        verify(jdbc, never()).update(eq(INSERT_SQL), (Object[])any());
+        verify(jdbc, never()).update(eq(CONSUME_SQL), (Object[])any());
     }
 
     @Test
@@ -154,7 +153,7 @@ class ReuseDetectingAuthorizationServiceTest {
         OAuth2Authorization result = service.findByToken("never-issued", OAuth2TokenType.REFRESH_TOKEN);
 
         assertThat(result).isNull();
-        verify(jdbc, never()).update(startsWith("DELETE FROM oauth2_authorization"), any());
+        verify(jdbc, never()).update(startsWith("DELETE FROM oauth2_authorization"), (Object[])any());
         verifyNoInteractions(auditService);
     }
 
