@@ -3,11 +3,14 @@ package com.havenbank.backend.authserver.config;
 import com.havenbank.backend.iam.service.UserDirectory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,11 +61,12 @@ public class TokenClaimsCustomizer implements OAuth2TokenCustomizer<JwtEncodingC
 
         // Access tokens carry this API's audience so the resource server can validate `aud`.
         if ("access_token".equals(context.getTokenType().getValue())) {
-            context.getClaims().audience(List.of(resourceId));
+            context.getClaims().audience(new ArrayList<>(List.of(resourceId)));
         }
         // Stamp auth_time on the OIDC ID token to support later step-up decisions.
         if ("id_token".equals(context.getTokenType().getValue())) {
-            context.getClaims().claim("auth_time", Instant.now().getEpochSecond());
+            context.getClaims().claim("auth_time", Date.from(Instant.now()));
+          //  context.getClaims().claim(OidcParameterNames.AUTH_TIME, Date.from(authenticatedInstant));
         }
     }
 }

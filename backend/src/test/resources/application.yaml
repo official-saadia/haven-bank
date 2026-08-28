@@ -63,6 +63,10 @@ spring:
     port: 3025
     username: test
     password: test
+    properties:
+          mail.smtp.connectiontimeout: 2000
+          mail.smtp.timeout: 2000
+          mail.smtp.writetimeout: 2000
 
 app:
   # Declared explicitly for the test context: the production @Value bindings no longer carry

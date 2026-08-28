@@ -102,7 +102,11 @@ public class AuthorizationServerConfig {
                                        RegisteredClientRepository registeredClientRepository) {
         ClassLoader loader = JdbcOAuth2AuthorizationService.class.getClassLoader();
         BasicPolymorphicTypeValidator.Builder validator = BasicPolymorphicTypeValidator.builder()
-                .allowIfSubType(AppUserPrincipal.class);
+                .allowIfSubType(AppUserPrincipal.class)
+                .allowIfSubType(java.lang.Long.class)
+                .allowIfSubType(java.lang.Integer.class)
+                .allowIfSubType(java.lang.Boolean.class)
+                .allowIfSubType(java.lang.Double.class);
         JsonMapper jsonMapper = JsonMapper.builder()
                 .addModules(SecurityJacksonModules.getModules(loader, validator))
                 .build();

@@ -1,5 +1,6 @@
 package com.havenbank.backend.money;
 
+import org.springframework.beans.factory.annotation.Value;
 import tools.jackson.databind.ObjectMapper;
 import com.havenbank.backend.iam.domain.Role;
 import com.havenbank.backend.iam.domain.User;
@@ -72,6 +73,8 @@ class ConcurrentTransferIntegrationTest extends AbstractIntegrationTest {
     private User bob;
     private UUID aliceAccountId;
     private UUID bobAccountId;
+    @Value("${app.issuer:http://localhost:8080}")
+    private String issuerUri;
 
     @BeforeEach
     void seedTwoFundedCustomers() throws Exception {
@@ -215,6 +218,7 @@ class ConcurrentTransferIntegrationTest extends AbstractIntegrationTest {
                 webApplicationContext.getBean(com.nimbusds.jose.jwk.source.JWKSource.class);
         var encoder = new org.springframework.security.oauth2.jwt.NimbusJwtEncoder(jwkSource);
         var claims = org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
+                .issuer(issuerUri)
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("roles", List.of("CUSTOMER"))

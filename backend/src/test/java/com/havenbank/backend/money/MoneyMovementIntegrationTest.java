@@ -6,6 +6,8 @@ import com.havenbank.backend.iam.repository.RoleRepository;
 import com.havenbank.backend.iam.repository.UserRepository;
 import com.havenbank.backend.money.repository.LedgerEntryRepository;
 import com.havenbank.backend.testsupport.AbstractIntegrationTest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import tools.jackson.databind.JsonNode; // ✅ Jackson 3 import
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +56,8 @@ class MoneyMovementIntegrationTest extends AbstractIntegrationTest {
     private RestTestClient restTestClient; // ✅ Correct import
 
     private User owner;
-
+    @Value("${app.issuer:http://localhost:8080}")
+    private String issuerUri;
     @BeforeEach
     void seedCustomer() {
         Role customer = roles.findByName("CUSTOMER")
@@ -133,12 +136,17 @@ class MoneyMovementIntegrationTest extends AbstractIntegrationTest {
                             .body("{\"amount\": " + amountEach + "}")
                             .exchange()
                             .returnResult(String.class);
-
+                    System.out.println("WWW-Authenticate: " + result.getResponseHeaders().getFirst("WWW-Authenticate"));
+                    System.out.println("Token: " + token);
                     if (result.getStatus().is2xxSuccessful()) {
                         successes.incrementAndGet();
                     }
+
+                    if (!result.getStatus().is2xxSuccessful()) {
+                        System.out.println("Status: " + result.getStatus() + " Body: " + result.getResponseBody());
+                    }
                 } catch (Exception ignored) {
-                    // counted via successes; a thread that fails simply doesn't increment it
+                   ignored.printStackTrace();
                 }
             }));
         }
@@ -196,7 +204,8 @@ class MoneyMovementIntegrationTest extends AbstractIntegrationTest {
         com.nimbusds.jose.jwk.source.JWKSource<com.nimbusds.jose.proc.SecurityContext> jwkSource =
                 webApplicationContext.getBean(com.nimbusds.jose.jwk.source.JWKSource.class);
         var encoder = new org.springframework.security.oauth2.jwt.NimbusJwtEncoder(jwkSource);
-        var claims = org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
+        var claims = JwtClaimsSet.builder()
+                .issuer(issuerUri)
                 .subject(owner.getId().toString())
                 .claim("email", owner.getEmail())
                 .claim("roles", List.of("CUSTOMER"))
