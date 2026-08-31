@@ -40,10 +40,32 @@ class PreferenceGateTest {
         return p;
     }
 
+
+    @Test
+    void deliversWhenThereIsNoUserToHavePreferences() {
+        assertThat(gate.isAllowed(null, NotificationType.ACCOUNT_CREATED, PreferenceGate.EMAIL)).isTrue();
+    }
+
+    @Test
+    void everySecurityCriticalTypeIsNonSuppressible() {
+        for (NotificationType type : NotificationType.values()) {
+            if (type.category() == com.havenbank.backend.notification.domain.NotificationCategory.SECURITY_CRITICAL) {
+                assertThat(gate.isAllowed(USER, type, PreferenceGate.EMAIL))
+                        .as("%s must not be suppressible", type)
+                        .isTrue();
+            }
+        }
+    }
+
     @Test
     void alwaysDeliversSecurityCriticalNotificationsEvenIfOptedOut() {
+        // Build and finish stubbing the nested mock BEFORE opening the outer when() - see
+        // FeeServiceTest for the full explanation of why nesting a preference(...) call (itself a
+        // when()...thenReturn()) inside the outer .thenReturn(...) argument corrupts Mockito's
+        // single-slot stubbing-progress tracker.
+        NotificationPreference optedOut = preference(false);
         when(preferences.findByUserIdAndTypeAndChannel(any(), any(), any()))
-                .thenReturn(Optional.of(preference(false)));
+                .thenReturn(Optional.of(optedOut));
 
         assertThat(gate.isAllowed(USER, NotificationType.PASSWORD_CHANGED, PreferenceGate.EMAIL)).isTrue();
         // The preference store is not even consulted for these.
@@ -60,33 +82,19 @@ class PreferenceGateTest {
 
     @Test
     void suppressesConvenienceNotificationsWhenTheUserHasOptedOut() {
+        NotificationPreference optedOut = preference(false);
         when(preferences.findByUserIdAndTypeAndChannel(eq(USER), eq(NotificationType.MONEY_MOVEMENT), eq(PreferenceGate.EMAIL)))
-                .thenReturn(Optional.of(preference(false)));
+                .thenReturn(Optional.of(optedOut));
 
         assertThat(gate.isAllowed(USER, NotificationType.MONEY_MOVEMENT, PreferenceGate.EMAIL)).isFalse();
     }
 
     @Test
     void deliversConvenienceNotificationsWhenExplicitlyEnabled() {
+        NotificationPreference optedIn = preference(true);
         when(preferences.findByUserIdAndTypeAndChannel(eq(USER), eq(NotificationType.MONEY_MOVEMENT), eq(PreferenceGate.EMAIL)))
-                .thenReturn(Optional.of(preference(true)));
+                .thenReturn(Optional.of(optedIn));
 
         assertThat(gate.isAllowed(USER, NotificationType.MONEY_MOVEMENT, PreferenceGate.EMAIL)).isTrue();
-    }
-
-    @Test
-    void deliversWhenThereIsNoUserToHavePreferences() {
-        assertThat(gate.isAllowed(null, NotificationType.ACCOUNT_CREATED, PreferenceGate.EMAIL)).isTrue();
-    }
-
-    @Test
-    void everySecurityCriticalTypeIsNonSuppressible() {
-        for (NotificationType type : NotificationType.values()) {
-            if (type.category() == com.havenbank.backend.notification.domain.NotificationCategory.SECURITY_CRITICAL) {
-                assertThat(gate.isAllowed(USER, type, PreferenceGate.EMAIL))
-                        .as("%s must not be suppressible", type)
-                        .isTrue();
-            }
-        }
     }
 }

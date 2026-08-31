@@ -7,6 +7,8 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/haven_bank}
     username: ${DB_USER:haven_bank}
     password: ${DB_PASSWORD:haven_bank}
+    hikari:
+      maximum-pool-size: 20
 
   jpa:
     hibernate:

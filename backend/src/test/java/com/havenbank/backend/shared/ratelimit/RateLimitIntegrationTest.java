@@ -2,10 +2,10 @@ package com.havenbank.backend.shared.ratelimit;
 
 import com.havenbank.backend.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -16,6 +16,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * ahead of Spring Security in the real filter chain - rather than only the mocked-Redis unit
  * coverage in {@link RateLimiterTest}.
  */
+// src/test/resources/application.yaml raises CRITICAL to 25/min so other integration tests (login,
+// OTP, registration flows) don't get accidentally throttled mid-test by production's tight 5/min.
+// This test's whole point is exercising that real 5/min ceiling, so it overrides back down, scoped
+// to only this class - Spring Boot test context caching keys off the full property set, so this
+// gets its own cached context rather than disturbing the 25/min one every other integration test
+// shares.
+@TestPropertySource(properties = "app.ratelimit.tiers.critical.limit=5")
 class RateLimitIntegrationTest extends AbstractIntegrationTest {
 
     @Test

@@ -149,7 +149,7 @@ class LoginFlowIntegrationTest extends AbstractIntegrationTest {
                 .andReturn();
         JsonNode tokenJson = objectMapper.readTree(tokenResponse.getResponse().getContentAsString());
         String accessToken = tokenJson.get("access_token").asText();
-        assertThat(tokenJson.has("refresh_token")).isTrue();
+        assertThat(tokenJson.has("refresh_token")).isTrue(); //@todo check is true
         assertThat(tokenJson.has("id_token")).isTrue();
 
         // Step 7: the real proof - this token, issued by the flow above, is accepted by an actual

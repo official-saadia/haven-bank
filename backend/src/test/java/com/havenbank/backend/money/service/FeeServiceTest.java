@@ -55,8 +55,9 @@ class FeeServiceTest {
     @Test
     void combinesTheFlatAndPercentageComponents() {
         UUID id = UUID.randomUUID();
+        FeeSchedule matched = schedule("1.50", "0.01", id);
         when(feeSchedules.findEffective(eq(TransactionType.TRANSFER), any(), any(Instant.class)))
-                .thenReturn(List.of(schedule("1.50", "0.01", id)));
+                .thenReturn(List.of(matched));
 
         FeeService.FeeResult result = feeService.feeFor(TransactionType.TRANSFER, new BigDecimal("200.00"));
 
@@ -67,8 +68,9 @@ class FeeServiceTest {
 
     @Test
     void roundsToTwoDecimalPlacesHalfEven() {
+        FeeSchedule matched = schedule("0.00", "0.033", UUID.randomUUID());
         when(feeSchedules.findEffective(any(), any(), any(Instant.class)))
-                .thenReturn(List.of(schedule("0.00", "0.033", UUID.randomUUID())));
+                .thenReturn(List.of(matched));
 
         // 0.033 * 10.10 = 0.3333 -> 0.33
         FeeService.FeeResult result = feeService.feeFor(TransactionType.TRANSFER, new BigDecimal("10.10"));
@@ -80,9 +82,16 @@ class FeeServiceTest {
     @Test
     void usesTheFirstEffectiveVersionWhenSeveralMatch() {
         UUID current = UUID.randomUUID();
+        // Build both mocks - and finish stubbing each of them - BEFORE opening the outer when().
+        // Nesting a schedule(...) call (which itself calls when()...thenReturn() three times)
+        // inside the argument to the outer .thenReturn(...) stubs a second mock while the first
+        // when() is still open; Mockito's stubbing-progress tracker only holds one open session at
+        // a time, so the outer one gets clobbered and later surfaces as UnfinishedStubbingException,
+        // sometimes on an unrelated later test rather than the one that actually caused it.
+        FeeSchedule first = schedule("2.00", "0.00", current);
+        FeeSchedule second = schedule("9.99", "0.50", UUID.randomUUID());
         when(feeSchedules.findEffective(any(), any(), any(Instant.class)))
-                .thenReturn(List.of(schedule("2.00", "0.00", current),
-                        schedule("9.99", "0.50", UUID.randomUUID())));
+                .thenReturn(List.of(first, second));
 
         FeeService.FeeResult result = feeService.feeFor(TransactionType.WITHDRAWAL, new BigDecimal("50.00"));
 

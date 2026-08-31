@@ -1,5 +1,6 @@
 package com.havenbank.backend.shared.crypto;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -58,5 +59,17 @@ class CryptoConverterTest {
 
         assertThatThrownBy(() -> converter.convertToEntityAttribute(tampered))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @AfterAll
+    static void restoreTheRealKey() {
+        // CryptoKeyHolder.key is a JVM-global static field (deliberately, so the non-Spring-managed
+        // JPA converter can reach it - see its own javadoc). Constructing one here with a different
+        // secret overwrites that global state for the rest of this JVM process, not just this test
+        // class. Any integration test sharing this JVM/IntelliJ run session that later tries to
+        // decrypt a column written under the real key would fail with AEADBadTagException, because
+        // it's genuinely being asked to decrypt with the wrong key - restore the actual default so
+        // that's never left behind.
+        new CryptoKeyHolder("change-me-dev-only-secret");
     }
 }

@@ -1,6 +1,9 @@
 # Test overrides. The mail credentials are dummies: SmtpEmailSender validates that the properties
 # are present at startup but does not connect, so a context test can boot without a real mailbox.
 spring:
+  datasource:
+      hikari:
+        maximum-pool-size: 20
   security:
     oauth2:
       authorizationserver:
@@ -89,7 +92,7 @@ app:
     # can be tightened and the service restarted, without waiting for a build.
     tiers:
       critical: # credential submission - guessable, so keyed by IP
-        limit: ${RL_CRITICAL_LIMIT:25}
+        limit: ${RL_CRITICAL_LIMIT:3}
         window: PT1M
         key: ip
         backoff: true

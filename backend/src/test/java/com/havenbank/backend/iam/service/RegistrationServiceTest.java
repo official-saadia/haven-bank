@@ -106,14 +106,21 @@ class RegistrationServiceTest {
     }
 
     @Test
-    void silentlyDoesNothingWhenTheEmailIsAlreadyRegistered() {
+    void notifiesTheExistingOwnerInsteadOfRegisteringAgainWhenTheEmailIsAlreadyRegistered() {
         when(userRepository.existsByEmailIgnoreCase(REQUEST.email())).thenReturn(true);
 
         // No exception: the caller cannot tell this apart from a successful registration.
         registrationService.register(REQUEST);
 
         verify(userRepository, never()).save(any());
-        verify(notificationService, never()).send(any());
+        // Mail goes out on this path too (not "do nothing") specifically so the observable
+        // behavior is identical to a real registration - see RegistrationService.register()'s own
+        // comment: a real registration also sends mail, so "was an email sent" can't be used as an
+        // enumeration side-channel to distinguish "this address exists" from "this address doesn't".
+        ArgumentCaptor<NotificationMessage> sent = ArgumentCaptor.forClass(NotificationMessage.class);
+        verify(notificationService).send(sent.capture());
+        assertThat(sent.getValue().recipientEmail()).isEqualTo(REQUEST.email());
+        assertThat(sent.getValue().type()).isEqualTo(NotificationType.REGISTRATION_ATTEMPT_EXISTING);
     }
 
     @Test

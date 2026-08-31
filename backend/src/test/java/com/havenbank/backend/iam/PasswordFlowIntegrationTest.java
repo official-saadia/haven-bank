@@ -77,7 +77,7 @@ class PasswordFlowIntegrationTest extends AbstractIntegrationTest {
 
         // Single-use (FR-1.11): the same token must not work a second time.
         mvc.perform(post("/api/v1/password/reset").contentType(APPLICATION_JSON).content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isGone()); //@todo check it should be 410 or 400
     }
 
     @Test

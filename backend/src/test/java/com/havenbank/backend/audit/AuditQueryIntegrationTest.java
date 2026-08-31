@@ -1,4 +1,4 @@
-package com.havenbank.backend.authserver;
+package com.havenbank.backend.audit;
 
 import com.havenbank.backend.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,8 @@
 package com.havenbank.backend.testsupport;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import com.redis.testcontainers.RedisContainer;
+import com.havenbank.backend.shared.ratelimit.RateLimitFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
 import java.time.Instant;
 import java.util.List;
@@ -76,15 +81,30 @@ public abstract class AbstractIntegrationTest {
     private JwtAuthenticationConverter jwtAuthenticationConverter;
 
     @Autowired
-    private org.springframework.data.redis.connection.RedisConnectionFactory redisConnectionFactory;
+    private RedisConnectionFactory redisConnectionFactory;
+
+    @Autowired(required = false)
+    private FilterRegistrationBean<RateLimitFilter> rateLimitFilterRegistration;
 
     protected MockMvc mvc;
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void setUpMvc() {
-        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).apply(
-                org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity()
-        ).build();
+
+        redisConnectionFactory.getConnection().serverCommands().flushAll();
+        var builder = MockMvcBuilders.webAppContextSetup(webApplicationContext).apply(
+                SecurityMockMvcConfigurers.springSecurity()
+        );
+        if (rateLimitFilterRegistration != null) {
+            // webAppContextSetup(...) wires the DispatcherServlet and, via springSecurity(), the
+            // Spring Security filter chain - but unlike @AutoConfigureMockMvc, it does NOT
+            // automatically pick up other FilterRegistrationBean-registered servlet filters.
+            // RateLimitFilter is registered that way (RateLimitConfig), so without this line it
+            // silently never runs in any MockMvc-based test regardless of configuration - it was
+            // never in the chain to begin with, not merely misconfigured.
+            builder = builder.addFilter(rateLimitFilterRegistration.getFilter(), "/*");
+        }
+        mvc = builder.build();
         redisConnectionFactory.getConnection().serverCommands().flushAll();
     }
 

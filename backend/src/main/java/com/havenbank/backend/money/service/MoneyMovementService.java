@@ -187,9 +187,18 @@ public class MoneyMovementService {
 
     /**
      * Case, spacing and punctuation are noise; a name is not a password.
+     *
+     * <p>Apostrophes are stripped outright rather than treated as a separator like a hyphen or
+     * comma: "O'Brien" must normalise to "obrien", not "o brien" - an apostrophe sits inside a
+     * single name token (O'Brien, D'Angelo), it doesn't join two separate ones the way "Smith,
+     * Jane" or "Brien-Smith" do.
      */
     private static String normalise(String name) {
-        return name == null ? "" : name.trim().toLowerCase().replaceAll("[^a-z0-9]+", " ").trim();
+        if (name == null) {
+            return "";
+        }
+        String withoutApostrophes = name.replaceAll("['\u2019]", "");
+        return withoutApostrophes.trim().toLowerCase().replaceAll("[^a-z0-9]+", " ").trim();
     }
 
     private BusinessException beneficiaryRejected() {

@@ -106,7 +106,7 @@ class DailyTransferLimitIntegrationTest extends AbstractIntegrationTest {
 
     private void seedPolicy(PolicyKey key, String value) {
         policies.save(Policy.builder().policyKey(key).scope("GLOBAL")
-                .value(new BigDecimal(value)).effectiveFrom(Instant.now().minusSeconds(60)).build());
+                .value(new BigDecimal(value)).effectiveFrom(Instant.now()).build());
     }
 
     private User save(String name, Role role) {

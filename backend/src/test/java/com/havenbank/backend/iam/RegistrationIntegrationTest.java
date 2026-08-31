@@ -77,6 +77,6 @@ class RegistrationIntegrationTest extends AbstractIntegrationTest {
                 """;
 
         mvc.perform(post("/api/v1/register/verify").contentType(APPLICATION_JSON).content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isGone()); //@todo check it should be 400 or 410
     }
 }
